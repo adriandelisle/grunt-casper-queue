@@ -1,6 +1,5 @@
 /*
  * grunt-casper-queues
- * 
  *
  * Copyright (c) 2015 Adrian De Lisle
  * Licensed under the MIT license.
@@ -33,20 +32,11 @@ module.exports = function (grunt) {
 
     // Configuration to be run (and then tested).
     casper_queues: {
-      default_options: {
+      test: {
         options: {
         },
-        files: {
-          'tmp/default_options': ['test/fixtures/testing', 'test/fixtures/123']
-        }
-      },
-      custom_options: {
-        options: {
-          separator: ': ',
-          punctuation: ' !!!'
-        },
-        files: {
-          'tmp/custom_options': ['test/fixtures/testing', 'test/fixtures/123']
+        queues: {
+          some: 'thing'
         }
       }
     },
