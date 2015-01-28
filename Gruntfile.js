@@ -34,9 +34,9 @@ module.exports = function (grunt) {
     casper_queues: {
       test: {
         options: {
-        },
-        queues: {
-          some: 'thing'
+            queue: {
+                some: 'test'
+            }
         }
       }
     },

@@ -12,16 +12,15 @@ var child_process = require('child_process');
 var async = require('async');
 
 var casperRun = function () {
-  child_process.execSync("ls");
+    return child_process.execSync("ls", {encoding: "utf8"});
 }
 
 module.exports = function (grunt) {
+    grunt.registerMultiTask('casper_queues', 'Run casperjs tess in the cli in parallel queues', function () {
+        var options = this.options();
+        var queue = options.queue;
+        console.log("Queue: " + JSON.stringify(queue, null, 2));
 
-  // Please see the Grunt documentation for more information regarding task
-  // creation: http://gruntjs.com/creating-tasks
-
-  grunt.registerMultiTask('casper_queues', 'Run casperjs tess in the cli in parallel queues', function () {
-    console.log("Queues: " + this.queues);
-
-  });
+        console.log(casperRun());
+    });
 };
