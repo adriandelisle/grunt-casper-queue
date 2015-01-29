@@ -34,9 +34,19 @@ module.exports = function (grunt) {
     casper_queues: {
       test: {
         options: {
-            queue: {
-                some: 'test'
-            }
+          verbose: true,
+          'ignore-ssl-errors': 'yes',
+          'ssl-protocol': 'any',
+          timeout: 10000,
+          includes: [],
+          queue: {
+            general: [
+              {
+                file: 'tests/casper-sample.js',
+                xunit: 'test-reports/casper-sample.xml'
+              }
+            ]
+          }
         }
       }
     },
