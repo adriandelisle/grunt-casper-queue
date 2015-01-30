@@ -43,11 +43,18 @@ module.exports = function (grunt) {
           ],
           queue: {
             google: [
-              {file: 'tests/casper-sample.js', xunit: 'test-reports/casper-sample-0.xml'},
-              {file: 'tests/casper-sample.js', xunit: 'test-reports/casper-sample-1.xml'},
-              {file: 'tests/casper-sample.js', xunit: 'test-reports/casper-sample-2.xml'},
-              {file: 'tests/casper-sample.js', xunit: 'test-reports/casper-sample-3.xml'},
-              {file: 'tests/casper-sample.js', xunit: 'test-reports/casper-sample-4.xml'}
+              {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-0.xml'},
+              {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-1.xml'},
+              {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-2.xml'},
+              {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-3.xml'},
+              {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-4.xml'}
+            ],
+            bing: [
+              {file: 'tests/casper-sample-1.js', xunit: 'test-reports/casper-sample-1-0.xml'},
+              {file: 'tests/casper-sample-1.js', xunit: 'test-reports/casper-sample-1-1.xml'},
+              {file: 'tests/casper-sample-1.js', xunit: 'test-reports/casper-sample-1-2.xml'},
+              {file: 'tests/casper-sample-1.js', xunit: 'test-reports/casper-sample-1-3.xml'},
+              {file: 'tests/casper-sample-1.js', xunit: 'test-reports/casper-sample-1-4.xml'}
             ]
           }
         }
