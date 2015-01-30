@@ -42,27 +42,12 @@ module.exports = function (grunt) {
             //'--includes='
           ],
           queue: {
-            general: [
-              {
-                file: 'tests/casper-sample.js',
-                xunit: 'test-reports/casper-sample-0.xml'
-              },
-              {
-                file: 'tests/casper-sample.js',
-                xunit: 'test-reports/casper-sample-1.xml'
-              },
-              {
-                file: 'tests/casper-sample.js',
-                xunit: 'test-reports/casper-sample-2.xml'
-              },
-              {
-                file: 'tests/casper-sample.js',
-                xunit: 'test-reports/casper-sample-3.xml'
-              },
-              {
-                file: 'tests/casper-sample.js',
-                xunit: 'test-reports/casper-sample-4.xml'
-              }
+            google: [
+              {file: 'tests/casper-sample.js', xunit: 'test-reports/casper-sample-0.xml'},
+              {file: 'tests/casper-sample.js', xunit: 'test-reports/casper-sample-1.xml'},
+              {file: 'tests/casper-sample.js', xunit: 'test-reports/casper-sample-2.xml'},
+              {file: 'tests/casper-sample.js', xunit: 'test-reports/casper-sample-3.xml'},
+              {file: 'tests/casper-sample.js', xunit: 'test-reports/casper-sample-4.xml'}
             ]
           }
         }

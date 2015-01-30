@@ -1,7 +1,7 @@
 {
   "name": "grunt-casper-queues",
   "version": "0.0.1",
-  "description": "Run casperjs tess in the cli in parallel queues",
+  "description": "Run casperjs tests in the cli in parallel queues",
   "repository": "https://github.com/adriandelisle/grunt-casperqueues.git",
   "author": {
     "name": "Adrian De Lisle",
@@ -26,7 +26,8 @@
   },
   "dependencies": {
     "async": "~0.9.0",
-    "casperjs": "~1.1.0-beta3"
+    "casperjs": "~1.1.0-beta3",
+    "underscore": "~1.7.0"
   },
   "scripts": {
     "test": "grunt test"
