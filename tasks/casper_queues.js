@@ -8,17 +8,33 @@
 
 'use strict';
 
-var execSync = require('child_process').execSync;
+var spawnSync = require('child_process').spawnSync;
 var async = require('async');
 var path = require('path');
-var casperBin = "node_modules/casperjs/bin/casperjs test";
+var fs = require('fs');
+var casperBin = "node_modules/casperjs/bin/casperjs";
 
 var casperRun = function (file, xunit, args) {
     file = path.resolve(process.cwd(), file);
     xunit = "--xunit=" + path.resolve(process.cwd(), xunit);
-    var command = casperBin + " " + args.join(" ") + " " + file + " " + xunit;
-    console.log(command);
-    return execSync(command, {encoding: "utf8", timeout: 30000});
+
+    args.unshift("test");
+    args.push(file);
+    args.push(xunit);
+    console.log(casperBin);
+    console.log(args);
+
+    if (!fs.existsSync(casperBin)) {
+        console.log("where's casper?");
+        return false;
+    }
+
+    var result = spawnSync(casperBin, args, {encoding: "utf8", timeout: 30000});
+    if (result.error) {
+        console.log("*error*: " + result.error);
+    } else {
+        return result.stdout;
+    }
 };
 
 module.exports = function (grunt) {
@@ -30,7 +46,7 @@ module.exports = function (grunt) {
         console.log("Queue: " + JSON.stringify(queue, null, 2));
 
         queue.general.forEach(function (test) {
-            console.log(casperRun(test.file, test.xunit, args));
+            console.log(casperRun(test.file, test.xunit, args.slice()));
         });
     });
 };
