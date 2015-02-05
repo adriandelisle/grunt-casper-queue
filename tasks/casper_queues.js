@@ -28,6 +28,7 @@ module.exports = function (grunt) {
     var args = options.args;
     var done = this.async();
     var failedTasks = {};
+    var queueTimes = [];
 
     if (fs.existsSync("node_modules/casperjs/bin/casperjs")) {
       casperBin = "node_modules/casperjs/bin/casperjs";
@@ -41,16 +42,16 @@ module.exports = function (grunt) {
     var casperRun = function (test, args, failed, callback) {
       var file = path.resolve(process.cwd(), test.file);
       var xunit = "--xunit=" + path.resolve(process.cwd(), test.xunit);
-      
+
       args.unshift("test");
       args.unshift(casperBin);
       args.push(file);
       args.push(xunit);
-    
+
       var command = args.join(" ");
-    
+
       grunt.log.writeln("Executing command: " + command);
-    
+
       var result = exec(command, {encoding: "utf8"}, function (error, stdout, stderr) {
         if (error) {
           failed.push(test);
@@ -71,7 +72,14 @@ module.exports = function (grunt) {
           }
         });
       });
-    }
+    };
+
+    var printLogQueueTimes = function () {
+      grunt.log.writeln("\nTest Sets Time Summary: ");
+      _.each(queueTimes, function (queueTime) {
+        grunt.log.writeln("Test Set: " + queueTime.name + " took " + queueTime.time + "s. Retry #" + queueTime.retry);
+      });
+    };
 
     var queue = async.queue(function (task, callback) {
       if (retries) {
@@ -88,6 +96,7 @@ module.exports = function (grunt) {
           grunt.log.error("Something when wrong: ", err);
         } else {
           grunt.log.writeln("Test set: " + task.name + " took " + new duration(taskStartTime).toString("%Ss.%Ls") + " seconds to run.");
+          queueTimes.push({name: task.name, time: new duration(taskStartTime).toString("%Ss.%Ls"), retry: retries});
           if (failedTests.length >= 1) {
             failedTasks[task.name] = failedTests;
           }
@@ -98,12 +107,15 @@ module.exports = function (grunt) {
 
     queue.drain = function () {
       if (_.isEmpty(failedTasks) && retries === 0) {
+        printLogQueueTimes();
         grunt.log.writeln("Everything is done yo. It took " + new duration(startTime).toString("%Ss.%Ls") + " seconds to run.");
         done();
-      } else if (_.isEmpty(failedTasks)) { 
+      } else if (_.isEmpty(failedTasks)) {
+        printLogQueueTimes();
         grunt.log.writeln("Everything is done yo, all tests pasted a retrying some " + retries + " times. It took " + new duration(startTime).toString("%Ss.%Ls") + " seconds to run.");
         done();
       } else if (!_.isEmpty(failedTasks) && retries >= maxRetries) {
+        printLogQueueTimes();
         grunt.log.error("Everything is done yo, but some tests failed. It took " + new duration(startTime).toString("%Ss.%Ls") + " seconds to run.");
         grunt.log.error("Failed Tests: " + JSON.stringify(failedTasks));
         done(false);
