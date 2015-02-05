@@ -34,6 +34,7 @@ module.exports = function (grunt) {
     casper_queues: {
       test: {
         options: {
+          queueWorkers: 2,
           args: [
             '--verbose',
             '--ignore-ssl-errors=yes',
