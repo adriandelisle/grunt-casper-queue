@@ -33,7 +33,7 @@ module.exports = function (grunt) {
     if (fs.existsSync("node_modules/casperjs/bin/casperjs")) {
       casperBin = "node_modules/casperjs/bin/casperjs";
     } else if (fs.existsSync("node_modules/grunt-casper-queues/node_modules/casperjs/bin/casperjs")) {
-      casperBin = "node_modules/grunt-casper-queues/node_modules/casperjs/bin/casperjs";
+      casperBin = "node_modules/grunt-casper-queue/node_modules/casperjs/bin/casperjs";
     } else {
       grunt.log.error("Could not find the casperjs binary.");
       done(false);
