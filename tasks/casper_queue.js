@@ -1,5 +1,5 @@
 /*
- * grunt-casper-queues
+ * grunt-casper-queue
  *
  *
  * Copyright (c) 2015 Adrian De Lisle
@@ -18,7 +18,7 @@ var duration = require('duration');
 var casperBin;
 
 module.exports = function (grunt) {
-  grunt.registerMultiTask('casper_queues', 'Run casperjs tests in the cli in parallel queues', function () {
+  grunt.registerMultiTask('casper_queue', 'Run casperjs tests in the cli in parallel queues', function () {
     var startTime = new Date();
     var options = this.options();
     var queueConfig = options.queue;

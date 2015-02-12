@@ -1,5 +1,5 @@
 /*
- * grunt-casper-queues
+ * grunt-casper-queue
  *
  * Copyright (c) 2015 Adrian De Lisle
  * Licensed under the MIT license.
@@ -31,7 +31,7 @@ module.exports = function (grunt) {
     },
 
     // Configuration to be run (and then tested).
-    casper_queues: {
+    casper_queue: {
       test: {
         options: {
           queueWorkers: 2,
@@ -74,7 +74,7 @@ module.exports = function (grunt) {
 
   // Whenever the "test" task is run, first clean the "tmp" dir, then run this
   // plugin's task(s), then test the result.
-  grunt.registerTask('test', ['clean', 'casper_queues', 'nodeunit']);
+  grunt.registerTask('test', ['clean', 'casper_queue', 'nodeunit']);
 
   // By default, lint and run all tests.
   grunt.registerTask('default', ['jshint', 'test']);
