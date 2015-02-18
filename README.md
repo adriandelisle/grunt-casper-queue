@@ -1,6 +1,11 @@
-# grunt-casper-queues
+# grunt-casper-queue
 
-> Run casperjs tess in the cli in parallel queues
+> Run casperjs test sets in parallel.
+
+Useful for parallelizing casperjs tests where the tests can be broken down into multiple sets of non-conflicting tests.
+
+ie. A, B, C, 1, 2, 3 are all casperjs tests where A, B, C cannot run at the same time likewise 1, 2, 3 cannot run at the same time, but any of 1, 2, 3 can run while any of A, B, C are running. 
+So both sets can run in series at the same time because they do not conflict with each other.
 
 ## Getting Started
 This plugin requires Grunt.
@@ -14,79 +19,123 @@ npm install grunt-casper-queues --save-dev
 Once the plugin has been installed, it may be enabled inside your Gruntfile with this line of JavaScript:
 
 ```js
-grunt.loadNpmTasks('grunt-casper-queues');
+grunt.loadNpmTasks('grunt-casper-queue');
 ```
 
-## The "casper_queues" task
+## The "casper_queue" task
 
 ### Overview
-In your project's Gruntfile, add a section named `casper_queues` to the data object passed into `grunt.initConfig()`.
+In your project's Gruntfile, add a section named `casper_queue` to the data object passed into `grunt.initConfig()`.
 
 ```js
 grunt.initConfig({
-  casper_queues: {
+  casper_queue: {
     options: {
-      // Task-specific options go here.
-    },
-    your_target: {
-      // Target-specific file lists and/or options go here.
-    },
+      queueWorkers: x,
+      maxRetries: x,
+      args: [],
+      queue: {
+        'test set name': [
+          {file: 'test.js', xunit: 'test-report.xml'}
+        ]
+      }
+    }
   },
 })
 ```
 
 ### Options
 
-#### options.separator
-Type: `String`
-Default value: `',  '`
+#### options.queue
+Type: `Object`
+Default value: `undefined`
 
-A string value that is used to do something with whatever.
+A configuration object that holds the tests sets to be run.
 
-#### options.punctuation
-Type: `String`
-Default value: `'.'`
+Eample:
 
-A string value that is used to do something else with whatever else.
+```js
+{
+  google: [
+    {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-0.xml'},
+    {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-1.xml'},
+    {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-2.xml'},
+    {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-3.xml'},
+    {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-4.xml'}
+  ],
+  bing: [
+    {file: 'tests/casper-sample-1.js', xunit: 'test-reports/casper-sample-1-0.xml'},
+    {file: 'tests/casper-sample-1.js', xunit: 'test-reports/casper-sample-1-1.xml'},
+    {file: 'tests/casper-sample-1.js', xunit: 'test-reports/casper-sample-1-2.xml'},
+    {file: 'tests/casper-sample-1.js', xunit: 'test-reports/casper-sample-1-3.xml'},
+    {file: 'tests/casper-sample-1.js', xunit: 'test-reports/casper-sample-1-4.xml'}
+]
+}
+```
+
+#### options.queueWorkers
+Type: `Number`
+Default value: `1`
+
+The number of test sets that will be run in parallel.
+
+#### options.maxRetries
+Type: `Number`
+Default value: `1`
+
+The maximum number of times retry failed tests.
+
+#### options.args
+Type: `Array`
+Default value: `[]`
+
+An array of strings representing the command line arguments to pass to casperjs.
 
 ### Usage Examples
 
-#### Default Options
-In this example, the default options are used to do something with whatever. So if the `testing` file has the content `Testing` and the `123` file had the content `1 2 3`, the generated result would be `Testing, 1 2 3.`
+An example configuration for grunt-casper-queue
 
 ```js
-grunt.initConfig({
-  casper_queues: {
-    options: {},
-    files: {
-      'dest/default_options': ['src/testing', 'src/123'],
-    },
-  },
-})
-```
-
-#### Custom Options
-In this example, custom options are used to do something else with whatever else. So if the `testing` file has the content `Testing` and the `123` file had the content `1 2 3`, the generated result in this case would be `Testing: 1 2 3 !!!`
-
-```js
-grunt.initConfig({
-  casper_queues: {
+casper_queue: {
+  test: {
     options: {
-      separator: ': ',
-      punctuation: ' !!!',
-    },
-    files: {
-      'dest/default_options': ['src/testing', 'src/123'],
-    },
-  },
-})
+      queueWorkers: 2,
+      args: [
+        '--verbose',
+        '--ignore-ssl-errors=yes',
+        '--ssl-protocal=any'
+      ],
+      queue: {
+        google: [
+          {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-0.xml'},
+          {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-1.xml'},
+          {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-2.xml'},
+          {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-3.xml'},
+          {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-4.xml'}
+        ],
+        bing: [
+          {file: 'tests/casper-sample-1.js', xunit: 'test-reports/casper-sample-1-0.xml'},
+          {file: 'tests/casper-sample-1.js', xunit: 'test-reports/casper-sample-1-1.xml'},
+          {file: 'tests/casper-sample-1.js', xunit: 'test-reports/casper-sample-1-2.xml'},
+          {file: 'tests/casper-sample-1.js', xunit: 'test-reports/casper-sample-1-3.xml'},
+          {file: 'tests/casper-sample-1.js', xunit: 'test-reports/casper-sample-1-4.xml'}
+        ]
+      }
+    }
+  }
+}
 ```
 
 ## Contributing
 In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).
 
 ## Release History
-_(Nothing yet)_
+* 18/02/2015    v0.0.6    updated readme to reflect current state of the project
+* 12/02/2015    v0.0.5    missed renaming the project in one place
+* 12/02/2015    v0.0.4    missed renaming the project in one place
+* 12/02/2015    v0.0.3    renamed project
+* 05/02/2015    v0.0.2    Added a summary of test set times
+* 04/02/2015    v0.0.1    initial version of casperjs queues
 
 ## License
 Copyright (c) 2015 Adrian De Lisle. Licensed under the MIT license.
