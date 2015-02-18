@@ -52,7 +52,7 @@ Default value: `undefined`
 
 A configuration object that holds the tests sets to be run.
 
-Eample:
+Example:
 
 ```js
 {
@@ -83,7 +83,7 @@ The number of test sets that will be run in parallel.
 Type: `Number`
 Default value: `1`
 
-The maximum number of times retry failed tests.
+The maximum number of times to retry failed tests.
 
 #### options.args
 Type: `Array`
@@ -130,6 +130,7 @@ casper_queue: {
 In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).
 
 ## Release History
+* 18/02/2015    v0.0.7    typos
 * 18/02/2015    v0.0.6    updated readme to reflect current state of the project
 * 12/02/2015    v0.0.5    missed renaming the project in one place
 * 12/02/2015    v0.0.4    missed renaming the project in one place
