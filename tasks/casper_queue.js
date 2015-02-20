@@ -39,6 +39,11 @@ module.exports = function (grunt) {
       grunt.log.error("Could not find the casperjs binary.");
       done(false);
     }
+    casperBin = path.resolve(process.cwd(), casperBin);
+    if (casperCwd) {
+      casperCwd = path.resolve(process.cwd(), casperCwd);
+      casperBin = path.relative(casperCwd, casperBin);
+    }
 
     var casperRun = function (test, args, failed, callback) {
       var file = path.resolve(process.cwd(), test.file);
@@ -58,7 +63,7 @@ module.exports = function (grunt) {
       };
 
       if (casperCwd) {
-        execOptions.cwd = path.resolve(process.cwd(), casperCwd);
+        execOptions.cwd = casperCwd;
       }
 
       var result = exec(command, execOptions, function (error, stdout, stderr) {
