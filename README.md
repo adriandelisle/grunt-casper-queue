@@ -13,7 +13,7 @@ This plugin requires Grunt.
 If you haven't used [Grunt](http://gruntjs.com/) before, be sure to check out the [Getting Started](http://gruntjs.com/getting-started) guide, as it explains how to create a [Gruntfile](http://gruntjs.com/sample-gruntfile) as well as install and use Grunt plugins. Once you're familiar with that process, you may install this plugin with this command:
 
 ```shell
-npm install grunt-casper-queues --save-dev
+npm install grunt-casper-queue --save-dev
 ```
 
 Once the plugin has been installed, it may be enabled inside your Gruntfile with this line of JavaScript:
@@ -69,7 +69,7 @@ Example:
     {file: 'tests/casper-sample-1.js', xunit: 'test-reports/casper-sample-1-2.xml'},
     {file: 'tests/casper-sample-1.js', xunit: 'test-reports/casper-sample-1-3.xml'},
     {file: 'tests/casper-sample-1.js', xunit: 'test-reports/casper-sample-1-4.xml'}
-]
+  ]
 }
 ```
 
@@ -90,6 +90,12 @@ Type: `Array`
 Default value: `[]`
 
 An array of strings representing the command line arguments to pass to casperjs.
+
+#### options.casperCwd
+Type: `String`
+Default value: `undefined`
+
+A string that will set the current working directory of the casper test when run.
 
 ### Usage Examples
 
@@ -130,6 +136,7 @@ casper_queue: {
 In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).
 
 ## Release History
+* 20/02/2015    v0.0.8    add the option to set the cwd for the casperjs exec
 * 18/02/2015    v0.0.7    typos
 * 18/02/2015    v0.0.6    updated readme to reflect current state of the project
 * 12/02/2015    v0.0.5    missed renaming the project in one place

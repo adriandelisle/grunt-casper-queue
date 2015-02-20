@@ -24,6 +24,7 @@ module.exports = function (grunt) {
     var queueConfig = options.queue;
     var maxRetries = options.maxRetries || 1;
     var queueWorkers = options.queueWorkers || 1;
+    var casperCwd= options.casperCwd;
     var retries = 0;
     var args = options.args;
     var done = this.async();
@@ -52,7 +53,15 @@ module.exports = function (grunt) {
 
       grunt.log.writeln("Executing command: " + command);
 
-      var result = exec(command, {encoding: "utf8"}, function (error, stdout, stderr) {
+      var execOptions = {
+        encoding: "utf8"
+      };
+
+      if (casperCwd) {
+        execOptions.cwd = path.resolve(process.cwd(), casperCwd);
+      }
+
+      var result = exec(command, execOptions, function (error, stdout, stderr) {
         if (error) {
           failed.push(test);
           grunt.log.error(error);
