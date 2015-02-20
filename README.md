@@ -136,6 +136,7 @@ casper_queue: {
 In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).
 
 ## Release History
+* 20/02/2015    v0.0.10   pretty print failed tests object
 * 20/02/2015    v0.0.9    make casperBin relative to the cwd if set
 * 20/02/2015    v0.0.8    add the option to set the cwd for the casperjs exec
 * 18/02/2015    v0.0.7    typos

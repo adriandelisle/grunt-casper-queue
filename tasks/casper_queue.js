@@ -131,7 +131,7 @@ module.exports = function (grunt) {
       } else if (!_.isEmpty(failedTasks) && retries >= maxRetries) {
         printLogQueueTimes();
         grunt.log.error("Everything is done yo, but some tests failed. It took " + new duration(startTime).toString("%Ss.%Ls") + " seconds to run.");
-        grunt.log.error("Failed Tests: " + JSON.stringify(failedTasks));
+        grunt.log.error("Failed Tests: " + JSON.stringify(failedTasks, null, 2));
         done(false);
       } else {
         retries++;
