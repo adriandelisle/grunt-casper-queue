@@ -27,6 +27,7 @@ module.exports = function (grunt) {
     var casperCwd= options.casperCwd;
     var retries = 0;
     var args = options.args;
+    var flags = options.flags;
     var done = this.async();
     var failedTasks = {};
     var queueTimes = [];
@@ -48,7 +49,21 @@ module.exports = function (grunt) {
     var casperRun = function (test, args, failed, callback) {
       var file = path.resolve(process.cwd(), test.file);
       var xunit = "--xunit=" + path.resolve(process.cwd(), test.xunit);
+      var overrides = test.overrides;
 
+      _.each(overrides, function (value, key) {
+        if (value === '' && args[key]) {
+          delete args[key];
+        } else {
+          args[key] = value;
+        }
+      });
+
+      args = _.map(args, function (value, key) {
+        return key + "=" + value;
+      });
+
+      args.unshift(flags);
       args.unshift("test");
       args.unshift(casperBin);
       args.push(file);
@@ -104,7 +119,7 @@ module.exports = function (grunt) {
       var failedTests = [];
 
       async.eachSeries(task.tests, function (test, callback) {
-        casperRun(test, args.slice(), failedTests, callback);
+        casperRun(test, _.clone(args), failedTests, callback);
       }, function (err) {
         if (err) {
           grunt.log.error("Something when wrong: ", err);

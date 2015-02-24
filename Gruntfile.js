@@ -35,16 +35,18 @@ module.exports = function (grunt) {
       test: {
         options: {
           queueWorkers: 2,
-          args: [
-            '--verbose',
-            '--ignore-ssl-errors=yes',
-            '--ssl-protocal=any',
-            '--timeout=10000'
-            //'--includes='
+          args: {
+          '--ignore-ssl-errors': 'yes',
+          '--ssl-protocal': 'any',
+          '--timeout': '10000'
+          //'--includes'
+          },
+          flags: [
+            '--verbose'
           ],
           queue: {
             google: [
-              {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-0.xml'},
+              {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-0.xml', overrides: {'--ignore-ssl-errors': '', '--ssl-protocal': 'sslv3'}},
               {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-1.xml'},
               {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-2.xml'},
               {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-3.xml'},

@@ -52,12 +52,16 @@ Default value: `undefined`
 
 A configuration object that holds the tests sets to be run.
 
+Each test consists of the file the test is in, the xunit file to store the result in, and any arguments that need to be overridden specifically for the test.
+
+if the override key exists in options.args and the override value is '' then that argument will be omitted. 
+
 Example:
 
 ```js
 {
   google: [
-    {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-0.xml'},
+    {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-0.xml', overrides: {'--ignore-ssl-errors': '', '--ssl-protocal': 'sslv3'}},
     {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-1.xml'},
     {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-2.xml'},
     {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-3.xml'},
@@ -86,10 +90,38 @@ Default value: `1`
 The maximum number of times to retry failed tests.
 
 #### options.args
+Type: `Object`
+Default value: `{}`
+
+An object representing the command line arguments to pass to casperjs.
+
+The key must be the full name of the argument (ie. '--ignore-ssl-errors') and the value must be a string.
+
+Example: 
+
+```js
+args: {
+  '--ignore-ssl-errors': 'yes',
+  '--ssl-protocal': 'any',
+  '--timeout': '10000'
+}
+```
+
+#### options.flags
 Type: `Array`
 Default value: `[]`
 
-An array of strings representing the command line arguments to pass to casperjs.
+An array of strings representing the command line flags to pass to casperjs.
+
+ie. All the command line arguments that have no value to set.
+
+Example:
+
+```js
+flags: [
+  '--verbose'
+]
+```
 
 #### options.casperCwd
 Type: `String`
@@ -136,6 +168,7 @@ casper_queue: {
 In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).
 
 ## Release History
+* 24/02/2015    v0.0.11   Added the ability for each test to override arguments
 * 20/02/2015    v0.0.10   pretty print failed tests object
 * 20/02/2015    v0.0.9    make casperBin relative to the cwd if set
 * 20/02/2015    v0.0.8    add the option to set the cwd for the casperjs exec
