@@ -32,7 +32,9 @@ module.exports = function (grunt) {
     var failedTasks = {};
     var queueTimes = [];
 
-    if (fs.existsSync("node_modules/casperjs/bin/casperjs")) {
+    if (fs.existsSync("/usr/src/casperjs/bin/casperjs")) {
+      casperBin = "/usr/src/casperjs/bin/casperjs";
+    } else if (fs.existsSync("node_modules/casperjs/bin/casperjs")) {
       casperBin = "node_modules/casperjs/bin/casperjs";
     } else if (fs.existsSync("node_modules/grunt-casper-queue/node_modules/casperjs/bin/casperjs")) {
       casperBin = "node_modules/grunt-casper-queue/node_modules/casperjs/bin/casperjs";
