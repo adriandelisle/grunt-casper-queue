@@ -54,14 +54,16 @@ A configuration object that holds the tests sets to be run.
 
 Each test consists of the file the test is in, the xunit file to store the result in, and any arguments that need to be overridden specifically for the test.
 
-if the override key exists in options.args and the override value is '' then that argument will be omitted. 
+If the override key exists in options.args and the override value is '' then that argument will be omitted. 
+
+If options.runHeadless is true then 'xvfb-run a' will be prepended to the command so that the test will be run headless (assuming xvfb is installed). This is useful when wanting to run a test using --engine=slimerjs in a headless environment
 
 Example:
 
 ```js
 {
   google: [
-    {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-0.xml', overrides: {'--ignore-ssl-errors': '', '--ssl-protocal': 'sslv3'}},
+    {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-0.xml', overrides: {'--ignore-ssl-errors': '', '--ssl-protocal': 'sslv3'}, options: {runHeadless: true}},
     {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-1.xml'},
     {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-2.xml'},
     {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-3.xml'},

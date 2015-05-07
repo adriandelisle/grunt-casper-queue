@@ -24,7 +24,7 @@ module.exports = function (grunt) {
     var queueConfig = options.queue;
     var maxRetries = options.maxRetries || 1;
     var queueWorkers = options.queueWorkers || 1;
-    var casperCwd= options.casperCwd;
+    var casperCwd = options.casperCwd;
     var retries = 0;
     var args = options.args;
     var flags = options.flags;
@@ -70,6 +70,10 @@ module.exports = function (grunt) {
       args.unshift(casperBin);
       args.push(file);
       args.push(xunit);
+
+      if (test.options && test.options.runHeadless) {
+        args.unshift("xvfb-run -a");
+      }
 
       var command = args.join(" ");
 
