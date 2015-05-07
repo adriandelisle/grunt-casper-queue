@@ -91,6 +91,10 @@ module.exports = function (grunt) {
         if (error) {
           failed.push(test);
           grunt.log.error(error);
+        } else if (stdout.match(/FAIL \d tests? executed in \d+\.\d+s, \d+ passed, \d+ failed, \d+ dubious, \d+ skipped\./)) {
+          // this is just a double check in case an error code isn't reported on failure (slimerjs)
+          failed.push(test);
+          grunt.log.error(file + "\n failed without reporting an error (regex match to failure output)");
         }
         grunt.log.writeln(file + "\n stdout:\n" + stdout);
         callback();
