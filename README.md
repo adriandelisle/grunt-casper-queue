@@ -46,6 +46,22 @@ grunt.initConfig({
 
 ### Options
 
+#### options.casperjsLocations
+Type: `Array`
+Default value: `[]`
+
+An array of locations to check for the casperjs executable.
+
+Example:
+
+```js
+casperjsLocations: [
+  "/usr/src/casperjs/bin/casperjs",
+  "node_modules/casperjs/bin/casperjs",
+  "node_modules/grunt-casper-queue/node_modules/casperjs/bin/casperjs"
+]
+```
+
 #### options.queue
 Type: `Object`
 Default value: `undefined`
@@ -170,6 +186,7 @@ casper_queue: {
 In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).
 
 ## Release History
+* 06/05/2015    v0.0.13   Added a check on error codes not being reported, a option giving locations to check for casperjs, and an option to run a test in a headless mode
 * 06/05/2015    v0.0.12   Added an addition location for the casperjs binary
 * 24/02/2015    v0.0.11   Added the ability for each test to override arguments
 * 20/02/2015    v0.0.10   pretty print failed tests object

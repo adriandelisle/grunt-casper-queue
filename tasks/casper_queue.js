@@ -25,6 +25,7 @@ module.exports = function (grunt) {
     var maxRetries = options.maxRetries || 1;
     var queueWorkers = options.queueWorkers || 1;
     var casperCwd = options.casperCwd;
+    var casperjsLocations = options.casperjsLocations || [];
     var retries = 0;
     var args = options.args;
     var flags = options.flags;
@@ -32,16 +33,18 @@ module.exports = function (grunt) {
     var failedTasks = {};
     var queueTimes = [];
 
-    if (fs.existsSync("/usr/src/casperjs/bin/casperjs")) {
-      casperBin = "/usr/src/casperjs/bin/casperjs";
-    } else if (fs.existsSync("node_modules/casperjs/bin/casperjs")) {
-      casperBin = "node_modules/casperjs/bin/casperjs";
-    } else if (fs.existsSync("node_modules/grunt-casper-queue/node_modules/casperjs/bin/casperjs")) {
-      casperBin = "node_modules/grunt-casper-queue/node_modules/casperjs/bin/casperjs";
-    } else {
+    casperjsLocations.some(function (location) {
+        if (fs.existsSync(location)) {
+          casperBin = location;
+          return true;
+        }
+    });
+
+    if (!casperBin) {
       grunt.log.error("Could not find the casperjs binary.");
       done(false);
     }
+
     casperBin = path.resolve(process.cwd(), casperBin);
     if (casperCwd) {
       casperCwd = path.resolve(process.cwd(), casperCwd);
@@ -94,7 +97,7 @@ module.exports = function (grunt) {
         } else if (stdout.match(/FAIL \d tests? executed in \d+\.\d+s, \d+ passed, \d+ failed, \d+ dubious, \d+ skipped\./)) {
           // this is just a double check in case an error code isn't reported on failure (slimerjs)
           failed.push(test);
-          grunt.log.error(file + "\n failed without reporting an error (regex match to failure output)");
+          grunt.log.error(file + "\n command failed without reporting an error (regex match to failure output)");
         }
         grunt.log.writeln(file + "\n stdout:\n" + stdout);
         callback();

@@ -35,11 +35,17 @@ module.exports = function (grunt) {
       test: {
         options: {
           queueWorkers: 2,
+          casperjsLocations: [
+            "/usr/src/casperjs/bin/casperjs",
+            "node_modules/casperjs/bin/casperjs",
+            "node_modules/grunt-casper-queue/node_modules/casperjs/bin/casperjs"
+          ],
           args: {
           '--ignore-ssl-errors': 'yes',
           '--ssl-protocal': 'any',
-          '--timeout': '10000'
+          '--timeout': '10000',
           //'--includes'
+          //'--engine': 'slimerjs'
           },
           flags: [
             '--verbose'
@@ -47,7 +53,16 @@ module.exports = function (grunt) {
           queue: {
             google: [
               {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-0.xml', overrides: {'--ignore-ssl-errors': '', '--ssl-protocal': 'sslv3'}},
-              {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-1.xml'},
+              {
+                file: 'tests/casper-sample-0.js',
+                xunit: 'test-reports/casper-sample-0-1.xml',
+                overrides: {
+                  '--engine': 'slimerjs'
+                },
+                options: {
+                  runHeadless: true
+                }
+              },
               {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-2.xml'},
               {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-3.xml'},
               {file: 'tests/casper-sample-0.js', xunit: 'test-reports/casper-sample-0-4.xml'}
