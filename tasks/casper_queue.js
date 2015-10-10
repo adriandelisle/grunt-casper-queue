@@ -14,6 +14,7 @@ var path = require('path');
 var fs = require('fs');
 var _ = require('underscore');
 var Duration = require('duration');
+var Spinner = require('cli-spinner').Spinner;
 
 var casperBin;
 
@@ -36,6 +37,10 @@ module.exports = function (grunt) {
         var infoColor = 'white';
         var failColor = 'red';
         var successColor = 'green';
+        var retryColor = 'yellow';
+        var spinner = new Spinner('%s ');
+
+        spinner.setSpinnerString('|/-\\');
 
         casperjsLocations.some(function (location) {
             if (fs.existsSync(location)) {
@@ -56,6 +61,8 @@ module.exports = function (grunt) {
         }
 
         var casperRun = function (test, args, failed, callback) {
+            spinner.start();
+
             var file = path.resolve(process.cwd(), test.file);
             var xunit = '--xunit=' + path.resolve(process.cwd(), test.xunit);
             var overrides = test.overrides;
@@ -121,6 +128,7 @@ module.exports = function (grunt) {
                     'tests': tasks
                 }, function (err) {
                     if (err) {
+                        spinner.stop();
                         grunt.log.error('Error processing queue: ' + name);
                     }
                 });
@@ -128,24 +136,49 @@ module.exports = function (grunt) {
         };
 
         var summary = function (numberOfTries, testStatus) {
-            grunt.log.writeln('\n********************************' [infoColor]);
-            grunt.log.writeln(' Test Summary: ' [infoColor]);
-            grunt.log.writeln('********************************\n' [infoColor]);
-            grunt.log.writeln(testStatus + ' \n');
+            grunt.log.writeln('\n*****************************************' [infoColor]);
+            grunt.log.writeln('\t     Test Summary: ' [infoColor]);
+            grunt.log.writeln('*****************************************\n' [infoColor]);
+
+            switch (testStatus) {
+                case 'ok':
+                    grunt.log.writeln('PASSED'[successColor] + ' \n');
+                    break;
+                case 'okWithRetry':
+                    grunt.log.writeln('PASSED WITH RETRY(S)'[retryColor] + ' \n');
+                    break;
+                case 'failed':
+                    grunt.log.writeln('FAILED'[failColor] + ' \n');
+                    break;
+                default:
+                    grunt.log.writeln('ALERT! TEST SUITE DID NOT RUN PROPERLY' [failColor] + ' \n');
+            }
+
             _.each(queueTimes, function (queueTime) {
                 grunt.log.writeln(
                     'Test Set: ' + queueTime.name + ' took ' + queueTime.time + 's. Retry #' + queueTime.retry
                 );
             });
-            grunt.log.writeln('Total time: ' + new Duration(startTime).toString('%Ss.%Ls') + ' seconds.');
+            grunt.log.writeln('\nTotal time: ' + new Duration(startTime).toString('%Ss.%Ls') + ' seconds.');
             grunt.log.writeln('Total retry(s): ' + numberOfTries);
         };
 
         var failureReport = function () {
             if (errorLog.length > 0) {
-                grunt.log.writeln('\n********************************' [infoColor]);
-                grunt.log.writeln(' Detailed Failure Report: ' [infoColor]);
-                grunt.log.writeln('********************************' [infoColor]);
+                grunt.log.writeln('\n*****************************************' [infoColor]);
+                grunt.log.writeln('\t Detailed Failure Report: ' [infoColor]);
+                grunt.log.writeln('*****************************************\n' [infoColor]);
+
+                // TODO: Finish report!
+                // TODO: Write it to a file!
+                //
+                var failures = _.values(failedTasks);
+                grunt.log.writeln(JSON.stringify(failedTasks));
+
+                _.each(failedTasks, function (f) {
+                    grunt.log.writeln('Test: ' + f.file);
+                });
+
                 var index = 0;
 
                 _.each(errorLog, function (log) {
@@ -184,13 +217,19 @@ module.exports = function (grunt) {
                         retry: retries
                     });
                     if (failedTests.length >= 1) {
+                        spinner.stop(true);
                         grunt.log.writeln('✘ ' [failColor] + task.name [failColor]);
+                        spinner.start();
                         _.each(failedTests, function (test) {
+                            spinner.stop(true);
                             grunt.log.writeln('  ✘ ' [failColor] + test.file [failColor]);
+                            spinner.start();
                         });
                         failedTasks[task.name] = failedTests;
                     } else {
+                        spinner.stop(true);
                         grunt.log.writeln('✔ ' [successColor] + task.name [successColor]);
+                        spinner.start();
                     }
                 }
                 callback(); //required for queue task to be considered done
@@ -198,17 +237,16 @@ module.exports = function (grunt) {
         }, queueWorkers);
 
         queue.drain = function () {
+            spinner.stop(true);
             if (_.isEmpty(failedTasks) && retries === 0) {
-
-                summary(retries, 'PASSED'[successColor].bold);
+                summary(retries, 'ok');
                 done(true);
             } else if (_.isEmpty(failedTasks)) {
-                summary(retries, 'PASSED WITH RETRY(s)'[successColor].bold);
+                summary(retries, 'okWithRetry');
                 done(true);
-            } else if (!_.isEmpty(failedTasks) && retries >= maxRetries) {
+            } else if (!_.isEmpty(failedTasks) && retries > maxRetries) {
                 failureReport();
-                summary(retries, 'FAILED'[failColor].bold);
-                grunt.log.error('Failed Tests: ' + JSON.stringify(failedTasks, null, 2));
+                summary(retries, 'failed');
                 done(false);
             } else {
                 retries++;
