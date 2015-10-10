@@ -14,16 +14,12 @@ module.exports = function (grunt) {
 
     // Project configuration.
     grunt.initConfig({
-        jshint: {
-            all: [
+        eslint: {
+            target: [
                 'Gruntfile.js',
                 'tasks/*.js',
                 '<%= nodeunit.tests %>'
-            ],
-            options: {
-                jshintrc: '.jshintrc',
-                reporter: require('jshint-stylish')
-            }
+            ]
         },
 
         // Before generating any new files, remove any previously-created files.
@@ -32,7 +28,7 @@ module.exports = function (grunt) {
         },
 
         // Configuration to be run (and then tested).
-        casper_queue: {
+        casperQueue: {
             test: {
                 options: {
                     queueWorkers: 2,
@@ -63,44 +59,25 @@ module.exports = function (grunt) {
                                 file: 'tests/casper-sample-0.js',
                                 xunit: 'test-reports/casper-sample-0-1.xml',
                                 overrides: {
-                                    '--engine': 'slimerjs'
+
+                                    // TODO: Slimer needs to be tested
+//                                    '--engine': 'slimerjs'
                                 },
                                 options: {
-                                    runHeadless: true
+
+                                    // TODO: Slimer needs to be tested
+//                                    runHeadless: true
                                 }
                             },
                             {
                                 file: 'tests/casper-sample-0.js',
                                 xunit: 'test-reports/casper-sample-0-2.xml'
-                            },
-                            {
-                                file: 'tests/casper-sample-0.js',
-                                xunit: 'test-reports/casper-sample-0-3.xml'
-                            },
-                            {
-                                file: 'tests/casper-sample-0.js',
-                                xunit: 'test-reports/casper-sample-0-4.xml'
                             }
                         ],
                         bing: [
                             {
                                 file: 'tests/casper-sample-1.js',
-                                xunit: 'test-reports/casper-sample-1-0.xml'},
-                            {
-                                file: 'tests/casper-sample-1.js',
-                                xunit: 'test-reports/casper-sample-1-1.xml'
-                            },
-                            {
-                                file: 'tests/casper-sample-1.js',
-                                xunit: 'test-reports/casper-sample-1-2.xml'
-                            },
-                            {
-                                file: 'tests/casper-sample-1.js',
-                                xunit: 'test-reports/casper-sample-1-3.xml'
-                            },
-                            {
-                                file: 'tests/casper-sample-1.js',
-                                xunit: 'test-reports/casper-sample-1-4.xml'
+                                xunit: 'test-reports/casper-sample-1-0.xml'
                             }
                         ]
                     }
@@ -160,12 +137,14 @@ module.exports = function (grunt) {
     // Actually load this plugin's task(s).
     grunt.loadTasks('tasks');
 
+    // Linter task
+    grunt.registerTask('lint', 'eslint');
+
     // Whenever the "test" task is run, first clean the "tmp" dir, then run this
     // plugin's task(s), then test the result.
-    grunt.registerTask('test', ['clean', 'casper_queue', 'nodeunit']);
-    grunt.registerTask('testSuccess', ['casper_queue:success']);
+    grunt.registerTask('test', ['clean', 'casperQueue', 'nodeunit']);
 
     // By default, lint and run all tests.
-    grunt.registerTask('default', ['jshint', 'test']);
+    grunt.registerTask('default', ['eslint', 'test']);
 
 };

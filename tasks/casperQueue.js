@@ -36,7 +36,7 @@ module.exports = function (grunt) {
         var failedTasks = {};
         var queueTimes = [];
         var errorLog = [];
-        var infoColor = 'white';
+        var infoColor = 'blue';
         var failColor = 'red';
         var successColor = 'green';
         var retryColor = 'yellow';
@@ -62,10 +62,8 @@ module.exports = function (grunt) {
             casperBin = path.relative(casperCwd, casperBin);
         }
 
-        var stdoutToFile = function (content) {
-            var logTimestamp = new Date().getTime();
-            var logPath = 'logs/test/' + globalTimeStamp + '/failure_' + logTimestamp + '.log';
-
+        var stdoutToFile = function (filePath, content) {
+            var logPath = 'logs/test/' + globalTimeStamp + filePath;
             grunt.file.write(logPath, content, { encoding: 'utf-8' });
             return logPath;
         };
@@ -114,13 +112,13 @@ module.exports = function (grunt) {
                     failed.push(test);
                     errorLog.push({
                         command: command,
-                        path: file,
+                        file: file,
                         stdout: stdout
                     });
                 } else if (stdout.match(/FAIL \d tests? executed in \d+\.\d+s, \d+ passed, \d+ failed, \d+ dubious, \d+ skipped\./)) {
                     errorLog.push({
                         command: command,
-                        path: file,
+                        file: file,
                         stdout: stdout
                     });
 
@@ -146,7 +144,7 @@ module.exports = function (grunt) {
         };
 
         var summary = function (numberOfTries, testStatus) {
-            grunt.log.writeln('\n*****************************************' [infoColor]);
+            grunt.log.writeln('\n\n*****************************************' [infoColor]);
             grunt.log.writeln('\t     Test Summary: ' [infoColor]);
             grunt.log.writeln('*****************************************\n' [infoColor]);
 
@@ -174,27 +172,33 @@ module.exports = function (grunt) {
         };
 
         var failureReport = function () {
-            if (errorLog.length > 0) {
-                grunt.log.writeln('\n*****************************************' [infoColor]);
-                grunt.log.writeln('\t Detailed Failure Report: ' [infoColor]);
-                grunt.log.writeln('*****************************************\n' [infoColor]);
+            var fullErrorLog = '';
+            var fullErrorLogPath;
 
-                var index = 0;
+            if (errorLog.length > 0) {
+
+                grunt.log.writeln('\n\n*****************************************' [infoColor]);
+                grunt.log.writeln('\t Detailed Failure Report: ' [infoColor]);
+                grunt.log.writeln('*****************************************' [infoColor]);
+
+                grunt.log.writeln('\nTotal # of failures: ' + errorLog.length);
 
                 _.each(errorLog, function (log) {
+                    var filePathSplit = log.file.split('/');
+                    var testName = _.last(filePathSplit);
 
-                    /* grunt.log.writeln(
-                        '\n--------------------------\tFAILURE # ' [infoColor] +
-                        index.toString() [infoColor] +
-                        '\t ---------------------------\n' [infoColor]
-                    );*/
+                    //TODO: Implement failure report per test
 
-                    var errorStdout = 'TEST PATH: ' + log.path + '\n\nCOMMAND: ' + log.command + '\n\nTEST:\n\n' + log.stdout;
-                    var path = stdoutToFile(errorStdout);
-
-                    grunt.log.writeln(path);
-                    index++;
+                    fullErrorLog += '\n-------------------------- ';
+                    fullErrorLog += testName;
+                    fullErrorLog += ' ---------------------------\n';
+                    fullErrorLog += '\nCOMMAND: ' + log.command ;
+                    fullErrorLog += '\n\n' + log.stdout + ' \n';
                 });
+
+                //var logTimestamp = new Date().getTime();
+                fullErrorLogPath = stdoutToFile('/all_failed_tests.log', fullErrorLog);
+                grunt.log.writeln('\nFull log: ' + fullErrorLogPath + ' \n');
             }
         };
 
@@ -249,8 +253,8 @@ module.exports = function (grunt) {
                 summary(retries, 'okWithRetry');
                 done(true);
             } else if (!_.isEmpty(failedTasks) && retries > maxRetries) {
-                failureReport();
                 summary(retries, 'failed');
+                failureReport();
                 done(false);
             } else {
                 retries++;
