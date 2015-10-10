@@ -32,10 +32,10 @@ module.exports = function (grunt) {
         var done = this.async();
         var failedTasks = {};
         var queueTimes = [];
-        var log = [];
-        var blue = 'blue';
-        var red = 'red';
-        var green = 'green';
+        var errorLog = [];
+        var infoColor = 'white';
+        var failColor = 'red';
+        var successColor = 'green';
 
         casperjsLocations.some(function (location) {
             if (fs.existsSync(location)) {
@@ -92,25 +92,24 @@ module.exports = function (grunt) {
                 execOptions.cwd = casperCwd;
             }
 
-            // TODO: consider push grunt.log.writeln('Executing command: ' + command) into log
             var result = exec(command, execOptions, function (error, stdout, stderr) {
                 if (error) {
                     failed.push(test);
-                    log.push({
+                    errorLog.push({
+                        command: command,
                         path: file,
-                        log: stdout
+                        stdout: stdout
                     });
-                    grunt.log.error(error);
                 } else if (stdout.match(/FAIL \d tests? executed in \d+\.\d+s, \d+ passed, \d+ failed, \d+ dubious, \d+ skipped\./)) {
-                    log.push({
+                    errorLog.push({
+                        command: command,
                         path: file,
-                        log: stdout
+                        stdout: stdout
                     });
 
                     // this is just a double check in case an error code isn't reported on failure (slimerjs)
                     failed.push(test);
                 }
-                grunt.log.writeln(file + '\n stdout:\n' + stdout);
                 callback();
             });
         };
@@ -128,37 +127,47 @@ module.exports = function (grunt) {
             });
         };
 
-
-        var printLogQueueTimes = function () {
-            grunt.log.writeln('\n********************************' [blue]);
-            grunt.log.writeln(' Test Sets Time Summary: ' [blue]);
-            grunt.log.writeln('********************************\n' [blue]);
-
+        var summary = function (numberOfTries, testStatus) {
+            grunt.log.writeln('\n********************************' [infoColor]);
+            grunt.log.writeln(' Test Summary: ' [infoColor]);
+            grunt.log.writeln('********************************\n' [infoColor]);
+            grunt.log.writeln(testStatus + ' \n');
             _.each(queueTimes, function (queueTime) {
-                grunt.log.writeln('Test Set: ' + queueTime.name + ' took ' + queueTime.time + 's. Retry #' + queueTime.retry);
+                grunt.log.writeln(
+                    'Test Set: ' + queueTime.name + ' took ' + queueTime.time + 's. Retry #' + queueTime.retry
+                );
             });
+            grunt.log.writeln('Total time: ' + new Duration(startTime).toString('%Ss.%Ls') + ' seconds.');
+            grunt.log.writeln('Total retry(s): ' + numberOfTries);
         };
 
-        var report = function () {
-            if (log.length > 0) {
-                grunt.log.writeln('\n********************************' [blue]);
-                grunt.log.writeln(' Detailed Failure Report: ' [blue]);
-                grunt.log.writeln('********************************' [blue]);
+        var failureReport = function () {
+            if (errorLog.length > 0) {
+                grunt.log.writeln('\n********************************' [infoColor]);
+                grunt.log.writeln(' Detailed Failure Report: ' [infoColor]);
+                grunt.log.writeln('********************************' [infoColor]);
                 var index = 0;
-                _.each(log, function (l) {
-                    grunt.log.writeln('\n--------------------------\tFAILURE # ' [blue] + index.toString() [blue] + '\t ---------------------------\n' [blue]);
-                    grunt.log.writeln(l.log);
+
+                _.each(errorLog, function (log) {
+                    grunt.log.writeln(
+                        '\n--------------------------\tFAILURE # ' [infoColor] +
+                        index.toString() [infoColor] +
+                        '\t ---------------------------\n' [infoColor]
+                    );
+                    var errorStdout = 'command:\n' + log.command + '\ntest:\n' + log.stdout;
+                    grunt.log.writeln(errorStdout);
                     index++;
                 });
             }
         };
 
+        var isRetryMessage = false;
         var queue = async.queue(function (task, callback) {
-            if (retries) {
-                grunt.log.writeln('Retrying failed tests in test set: ' + task.name);
+            if (retries && !isRetryMessage) {
+                grunt.log.writeln('\nRetrying failed test(s): \n' [infoColor]);
+                isRetryMessage = true;
             }
 
-            grunt.log.writeln('Starting set: ' + task.name);
             var taskStartTime = new Date();
             var failedTests = [];
 
@@ -169,15 +178,19 @@ module.exports = function (grunt) {
                 if (err) {
                     grunt.log.error('Something when wrong: ', err);
                 } else {
-                    queueTimes.push({name: task.name, time: new Duration(taskStartTime).toString('%Ss.%Ls'), retry: retries});
+                    queueTimes.push({
+                        name: task.name,
+                        time: new Duration(taskStartTime).toString('%Ss.%Ls'),
+                        retry: retries
+                    });
                     if (failedTests.length >= 1) {
-                        grunt.log.writeln(' ✘ ' [red] + task.name [red]);
+                        grunt.log.writeln('✘ ' [failColor] + task.name [failColor]);
                         _.each(failedTests, function (test) {
-                            grunt.log.writeln(' Test: ' [red] + test.file [red]);
+                            grunt.log.writeln('  ✘ ' [failColor] + test.file [failColor]);
                         });
                         failedTasks[task.name] = failedTests;
                     } else {
-                        grunt.log.writeln(' ✔ ' [green] + task.name [green]);
+                        grunt.log.writeln('✔ ' [successColor] + task.name [successColor]);
                     }
                 }
                 callback(); //required for queue task to be considered done
@@ -186,17 +199,15 @@ module.exports = function (grunt) {
 
         queue.drain = function () {
             if (_.isEmpty(failedTasks) && retries === 0) {
-                printLogQueueTimes();
-                grunt.log.writeln('Everything is done yo. It took ' + new Duration(startTime).toString('%Ss.%Ls') + ' seconds to run.');
-                done();
+
+                summary(retries, 'PASSED'[successColor].bold);
+                done(true);
             } else if (_.isEmpty(failedTasks)) {
-                printLogQueueTimes();
-                grunt.log.writeln('Everything is done yo, all tests pasted a retrying some ' + retries + ' times. It took ' + new Duration(startTime).toString('%Ss.%Ls') + ' seconds to run.');
-                done();
+                summary(retries, 'PASSED WITH RETRY(s)'[successColor].bold);
+                done(true);
             } else if (!_.isEmpty(failedTasks) && retries >= maxRetries) {
-                report();
-                printLogQueueTimes();
-                grunt.log.error('Everything is done yo, but some tests failed. It took ' + new Duration(startTime).toString('%Ss.%Ls') + ' seconds to run.');
+                failureReport();
+                summary(retries, 'FAILED'[failColor].bold);
                 grunt.log.error('Failed Tests: ' + JSON.stringify(failedTasks, null, 2));
                 done(false);
             } else {
