@@ -83,47 +83,6 @@ module.exports = function (grunt) {
                         ]
                     }
                 }
-            },
-            success: {
-                options: {
-                    queueWorkers: 2,
-                    casperjsLocations: [
-                        '/usr/src/casperjs/bin/casperjs',
-                        'node_modules/casperjs/bin/casperjs',
-                        'node_modules/grunt-casper-queue/node_modules/casperjs/bin/casperjs'
-                    ],
-                    args: {
-                        '--ignore-ssl-errors': 'yes',
-                        '--ssl-protocal': 'any',
-                        '--timeout': '10000'
-                    },
-                    flags: [
-                        '--verbose'
-                    ],
-                    queue: {
-                        bing: [
-                            {
-                                file: 'tests/casper-sample-1.js',
-                                xunit: 'test-reports/casper-sample-1-0.xml'},
-                            {
-                                file: 'tests/casper-sample-1.js',
-                                xunit: 'test-reports/casper-sample-1-1.xml'
-                            },
-                            {
-                                file: 'tests/casper-sample-1.js',
-                                xunit: 'test-reports/casper-sample-1-2.xml'
-                            },
-                            {
-                                file: 'tests/casper-sample-1.js',
-                                xunit: 'test-reports/casper-sample-1-3.xml'
-                            },
-                            {
-                                file: 'tests/casper-sample-1.js',
-                                xunit: 'test-reports/casper-sample-1-4.xml'
-                            }
-                        ]
-                    }
-                }
             }
         },
 
