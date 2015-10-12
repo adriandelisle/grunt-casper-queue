@@ -34,6 +34,7 @@ module.exports = function (grunt) {
                     queueWorkers: 2,
                     maxRetries: 1,
                     casperjsLocations: [
+                        '/usr/local/bin/casperjs',
                         '/usr/src/casperjs/bin/casperjs',
                         'node_modules/casperjs/bin/casperjs',
                         'node_modules/grunt-casper-queue/node_modules/casperjs/bin/casperjs'

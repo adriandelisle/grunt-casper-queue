@@ -39,21 +39,7 @@ module.exports = function (grunt) {
         var successColor = 'green';
         var retryColor = 'yellow';
 
-        exec('which casperjs', function (error, stdout, stderr) {
-            var isCasper = stdout.match(/casperjs/);
-            if (isCasper === undefined || isCasper === null) {
-                grunt.log.error('CasperJs needs to be installed first. @see http://casperjs.org' [failColor]);
-                done(false);
-            }
-            if (stderr || error) {
-                grunt.log.error('Failed to locate CasperJsi.');
-                done(false);
-            };
-            casperBin = stdout;
-        });
-
-/*        casperjsLocations.some(function (location) {
-            console.log(location);
+        casperjsLocations.some(function (location) {
             if (fs.existsSync(location)) {
                 casperBin = location;
                 return true;
@@ -61,18 +47,16 @@ module.exports = function (grunt) {
         });
 
         if (!casperBin) {
-            grunt.log.error('Could not find the casperjs binary.');
+            grunt.log.error('Could not find the casperjs binary. @see http://casperjs.org/');
             done(false);
         }
 
-        console.log(casperBin);
-
-        //casperBin = path.resolve(process.cwd(), casperBin);
+        casperBin = path.resolve(process.cwd(), casperBin);
         if (casperCwd) {
             casperCwd = path.resolve(process.cwd(), casperCwd);
             casperBin = path.relative(casperCwd, casperBin);
         }
-*/
+
         var casperRun = function (test, args, failed, callback) {
             var file = path.resolve(process.cwd(), test.file);
             var xunit = '--xunit=' + path.resolve(process.cwd(), test.xunit);
