@@ -14,7 +14,6 @@ var path = require('path');
 var fs = require('fs');
 var _ = require('underscore');
 var Duration = require('duration');
-var Spinner = require('cli-spinner').Spinner;
 
 var casperBin;
 
@@ -40,9 +39,6 @@ module.exports = function (grunt) {
         var failColor = 'red';
         var successColor = 'green';
         var retryColor = 'yellow';
-        var spinner = new Spinner('%s ');
-
-        spinner.setSpinnerString('|/-\\');
 
         casperjsLocations.some(function (location) {
             if (fs.existsSync(location)) {
@@ -62,15 +58,7 @@ module.exports = function (grunt) {
             casperBin = path.relative(casperCwd, casperBin);
         }
 
-        var stdoutToFile = function (filePath, content) {
-            var logPath = 'logs/test/' + globalTimeStamp + filePath;
-            grunt.file.write(logPath, content, { encoding: 'utf-8' });
-            return logPath;
-        };
-
         var casperRun = function (test, args, failed, callback) {
-            spinner.start();
-
             var file = path.resolve(process.cwd(), test.file);
             var xunit = '--xunit=' + path.resolve(process.cwd(), test.xunit);
             var overrides = test.overrides;
@@ -107,23 +95,17 @@ module.exports = function (grunt) {
                 execOptions.cwd = casperCwd;
             }
 
-            var result = exec(command, execOptions, function (error, stdout, stderr) {
-                if (error) {
-                    failed.push(test);
-                    errorLog.push({
-                        command: command,
-                        file: file,
-                        stdout: stdout
-                    });
-                } else if (stdout.match(/FAIL \d tests? executed in \d+\.\d+s, \d+ passed, \d+ failed, \d+ dubious, \d+ skipped\./)) {
-                    errorLog.push({
-                        command: command,
-                        file: file,
-                        stdout: stdout
-                    });
+            exec(command, execOptions, function (error, stdout, stderr) {
 
-                    // this is just a double check in case an error code isn't reported on failure (slimerjs)
+                /* This checking is just in the case of an error don't get reported (SlimerJs) */
+                var isError = stdout.match(/FAIL \d tests? executed in \d+\.\d+s, \d+ passed, \d+ failed, \d+ dubious, \d+ skipped\./);
+                if (error || isError) {
                     failed.push(test);
+                    errorLog.push({
+                        command: command,
+                        file: file,
+                        stdout: stdout
+                    });
                 }
                 callback();
             });
@@ -136,7 +118,6 @@ module.exports = function (grunt) {
                     'tests': tasks
                 }, function (err) {
                     if (err) {
-                        spinner.stop();
                         grunt.log.error('Error processing queue: ' + name);
                     }
                 });
@@ -147,7 +128,6 @@ module.exports = function (grunt) {
             grunt.log.writeln('\n\n*****************************************' [infoColor]);
             grunt.log.writeln('\t     Test Summary: ' [infoColor]);
             grunt.log.writeln('*****************************************\n' [infoColor]);
-
             switch (testStatus) {
                 case 'ok':
                     grunt.log.writeln('PASSED'[successColor] + ' \n');
@@ -161,7 +141,6 @@ module.exports = function (grunt) {
                 default:
                     grunt.log.writeln('ALERT! TEST SUITE DID NOT RUN PROPERLY' [failColor] + ' \n');
             }
-
             _.each(queueTimes, function (queueTime) {
                 grunt.log.writeln(
                     'Test Set: ' + queueTime.name + ' took ' + queueTime.time + 's. Retry #' + queueTime.retry
@@ -172,9 +151,13 @@ module.exports = function (grunt) {
         };
 
         var failureReport = function () {
-            var fullErrorLog = '';
-            var fullErrorLogPath;
+            var allFailedTextFile = '.log/test/all_failed_tests.txt';
+            var allFailedStdoutFile = '.log/test/all_failed_tests.stdout';
 
+            /* Delete old logs */
+            grunt.file.delete('.log/test/');
+
+            var allFailed = '';
             if (errorLog.length > 0) {
 
                 grunt.log.writeln('\n\n*****************************************' [infoColor]);
@@ -189,16 +172,21 @@ module.exports = function (grunt) {
 
                     //TODO: Implement failure report per test
 
-                    fullErrorLog += '\n-------------------------- ';
-                    fullErrorLog += testName;
-                    fullErrorLog += ' ---------------------------\n';
-                    fullErrorLog += '\nCOMMAND: ' + log.command ;
-                    fullErrorLog += '\n\n' + log.stdout + ' \n';
+                    allFailed += '\n-------------------------- ';
+                    allFailed += testName;
+                    allFailed += ' ---------------------------\n';
+                    allFailed += '\nCOMMAND: ' + log.command ;
+                    allFailed += '\n\n' + log.stdout + ' \n';
                 });
 
-                //var logTimestamp = new Date().getTime();
-                fullErrorLogPath = stdoutToFile('/all_failed_tests.log', fullErrorLog);
-                grunt.log.writeln('\nFull log: ' + fullErrorLogPath + ' \n');
+                /* This regex removes all ANSI color codes from standard output */
+                var noAnsiColorRegex = /\x1B\[([0-9]{1,2}(;[0-9]{1,2}(;[0-9])?)?)?[m|K]/g;
+                var plainText = allFailed.replace(noAnsiColorRegex, '');
+
+                grunt.file.write(allFailedTextFile, plainText);
+                grunt.file.write(allFailedStdoutFile, allFailed);
+
+                grunt.log.writeln('\nAll failed:\n - ' + allFailedTextFile + '\n - ' + allFailedStdoutFile);
             }
         };
 
@@ -225,19 +213,13 @@ module.exports = function (grunt) {
                         retry: retries
                     });
                     if (failedTests.length >= 1) {
-                        spinner.stop(true);
                         grunt.log.writeln('✘ ' [failColor] + task.name [failColor]);
-                        spinner.start();
                         _.each(failedTests, function (test) {
-                            spinner.stop(true);
                             grunt.log.writeln('  ✘ ' [failColor] + test.file [failColor]);
-                            spinner.start();
                         });
                         failedTasks[task.name] = failedTests;
                     } else {
-                        spinner.stop(true);
                         grunt.log.writeln('✔ ' [successColor] + task.name [successColor]);
-                        spinner.start();
                     }
                 }
                 callback(); //required for queue task to be considered done
@@ -245,7 +227,6 @@ module.exports = function (grunt) {
         }, queueWorkers);
 
         queue.drain = function () {
-            spinner.stop(true);
             if (_.isEmpty(failedTasks) && retries === 0) {
                 summary(retries, 'ok');
                 done(true);
