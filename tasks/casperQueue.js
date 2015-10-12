@@ -150,11 +150,8 @@ module.exports = function (grunt) {
         var failureReport = function () {
             var allFailedTextFile = '.log/test/all_failed_tests.txt';
             var allFailedStdoutFile = '.log/test/all_failed_tests.stdout';
-
-            /* Delete old logs */
-            grunt.file.delete('.log/test/');
-
             var allFailed = '';
+
             if (errorLog.length > 0) {
                 grunt.log.writeln('\nTotal # of failures: ' + errorLog.length);
 
