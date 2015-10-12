@@ -19,7 +19,6 @@ var casperBin;
 
 module.exports = function (grunt) {
     grunt.registerMultiTask('casperQueue', 'Run casperjs tests in the cli in parallel queues', function () {
-
         var startTime = new Date();
         var globalTimeStamp = startTime.getTime();
         var options = this.options();
@@ -125,9 +124,7 @@ module.exports = function (grunt) {
         };
 
         var summary = function (numberOfTries, testStatus) {
-            grunt.log.writeln('\n\n*****************************************' [infoColor]);
-            grunt.log.writeln('\t     Test Summary: ' [infoColor]);
-            grunt.log.writeln('*****************************************\n' [infoColor]);
+            grunt.log.write('\nStatus: ');
             switch (testStatus) {
                 case 'ok':
                     grunt.log.writeln('PASSED'[successColor] + ' \n');
@@ -159,11 +156,6 @@ module.exports = function (grunt) {
 
             var allFailed = '';
             if (errorLog.length > 0) {
-
-                grunt.log.writeln('\n\n*****************************************' [infoColor]);
-                grunt.log.writeln('\t Detailed Failure Report: ' [infoColor]);
-                grunt.log.writeln('*****************************************' [infoColor]);
-
                 grunt.log.writeln('\nTotal # of failures: ' + errorLog.length);
 
                 _.each(errorLog, function (log) {
@@ -186,7 +178,10 @@ module.exports = function (grunt) {
                 grunt.file.write(allFailedTextFile, plainText);
                 grunt.file.write(allFailedStdoutFile, allFailed);
 
-                grunt.log.writeln('\nAll failed:\n - ' + allFailedTextFile + '\n - ' + allFailedStdoutFile);
+                grunt.log.writeln('\nLog files:\n');
+
+                grunt.log.writeln(' ' + allFailedTextFile);
+                grunt.log.writeln(' ' + allFailedStdoutFile + ' \n\n');
             }
         };
 
