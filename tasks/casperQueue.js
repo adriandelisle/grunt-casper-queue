@@ -212,7 +212,7 @@ module.exports = function (grunt) {
                         time: new Duration(taskStartTime).toString('%Ss.%Ls'),
                         retry: retries
                     });
-                    if (failedTests.length >= 1) {
+                    if (failedTests.length > 0) {
                         grunt.log.writeln('✘ ' [failColor] + task.name [failColor]);
                         _.each(failedTests, function (test) {
                             grunt.log.writeln('  ✘ ' [failColor] + test.file [failColor]);
@@ -233,7 +233,7 @@ module.exports = function (grunt) {
             } else if (_.isEmpty(failedTasks)) {
                 summary(retries, 'okWithRetry');
                 done(true);
-            } else if (!_.isEmpty(failedTasks) && retries > maxRetries) {
+            } else if (!_.isEmpty(failedTasks) && retries >= maxRetries) {
                 summary(retries, 'failed');
                 failureReport();
                 done(false);

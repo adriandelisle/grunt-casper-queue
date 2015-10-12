@@ -4,4 +4,5 @@ npm-debug.log
 tmp
 test-reports/**
 *.swp
-logs/
+/logs
+.log/
