@@ -1,6 +1,6 @@
 {
   "name": "grunt-casper-queue",
-  "version": "0.0.14-alfa",
+  "version": "1.0.0-alfa",
   "description": "Run casperjs tests in the cli in parallel queues",
   "repository": "https://github.com/adriandelisle/grunt-casper-queue.git",
   "author": {
