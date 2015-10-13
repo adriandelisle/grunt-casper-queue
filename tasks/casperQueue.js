@@ -40,6 +40,7 @@ module.exports = function (grunt) {
         var failColor = 'red';
         var successColor = 'green';
         var retryColor = 'yellow';
+        var noAnsiColorRegex = /\x1B\[([0-9]{1,2}(;[0-9]{1,2}(;[0-9])?)?)?[m|K]/g;
 
         casperjsLocations.some(function (location) {
             if (fs.existsSync(location)) {
@@ -127,7 +128,7 @@ module.exports = function (grunt) {
             });
         };
 
-        var summary = function (numberOfTries, testStatus) {
+        var summary = function (testStatus) {
             switch (testStatus) {
                 case 'ok':
                     grunt.log.writeln('\nPASSED'[successColor] + ' \n');
@@ -142,59 +143,51 @@ module.exports = function (grunt) {
                     grunt.log.writeln('\nALERT! TEST SUITE DID NOT RUN PROPERLY' [failColor] + ' \n');
             }
             _.each(queueTimes, function (queueTime) {
-                grunt.log.writeln(
-                    'Test Set: ' + queueTime.name + ' took ' + queueTime.time + 's. Retry #' + queueTime.retry
-                );
+                var timeSummary = 'Test Set: ' + queueTime.name + ' took ' + queueTime.time + 's. Retry #' + queueTime.retry;
+                grunt.log.writeln(timeSummary);
             });
             grunt.log.writeln('\nTotal time: ' + new Duration(startTime).toString('%Ss.%Ls') + ' seconds.');
-            grunt.log.writeln('Total retry(s): ' + numberOfTries);
         };
 
         var testResult = function (log) {
-            if (log.length > 0) {
+            try {
                 log = _.groupBy(log, 'file');
-                var text = '\n----------------------------------------------------------------------';
+                var text = '';
                 for (var key in log) {
                     if (log.hasOwnProperty (key)) {
                         var splitKey = key.split('/');
                         var testName = _.last(splitKey);
-
-                        text += '\n' + testName + '\n';
-                        text += '\n' + log[key][0].command + '\n';
-
+                        var command = log[key][0].command;
+                        command = command.split('--xunit')[0];
+                        command = '$ casperjs ' + command.split('casperjs')[1];
+                        text += '\n***********************************************************';
+                        text += '\nTEST: ' + testName;
+                        text += '\n***********************************************************'
+                        text += '\n\n' + command + '\n';
                         for (var i = 1; i <= log[key].length; i++) {
-                            text += '\n' + i + ') ';
-                            text += log[key][i - 1].stdout + '\n';
+                            text += '\n\t\t\t\t - ' + i + ' -';
+                            text += '\n\n' + log[key][i - 1].stdout + '\n';
                         };
                     }
                 }
                 return text;
+            } catch (err) {
+                grunt.log.writeln('Failed to generate failure report.')
+                return null;
             }
-            return null;
         };
 
         var failureReport = function () {
             if (errorLog.length > 0) {
-                console.log(testResult(errorLog));
+                var report = testResult(errorLog);
+                var reportText = report.replace(noAnsiColorRegex, '');
 
-               // grunt.log.writeln('\nTotal # of failures: ' + errorLog.length);
-               // errorLog = _.sortedIndex(errorLog, {name: 'larry', age: 50}, 'age');
-               // _.each(errorLog, function (log) {
-               //     var filePathSplit = log.file.split('/');
-               //     var testName = _.last(filePathSplit);
-               //     allFailed += '\n\n' + log.stdout + ' \n';
-               // });
+                grunt.file.write(logPath + 'all_failed_tests.txt', reportText);
+                grunt.file.write(logPath + 'all_failed_tests.out', report);
 
-                /* This regex removes all ANSI color codes from standard output */
-               // var noAnsiColorRegex = /\x1B\[([0-9]{1,2}(;[0-9]{1,2}(;[0-9])?)?)?[m|K]/g;
-               // var plainText = allFailed.replace(noAnsiColorRegex, '');
-
-               // grunt.file.write(logPath + 'all_failed_tests.txt', plainText);
-               // grunt.file.write(logPath + 'all_failed_tests.out', allFailed);
-
-               // grunt.log.writeln('\nLog files:\n');
-               // grunt.log.writeln(' ' + allFailedTextFile);
-               // grunt.log.writeln(' ' + allFailedStdoutFile + ' \n\n');
+                grunt.log.writeln('\nLog files:\n');
+                grunt.log.writeln(logPath + 'all_failed_tests.txt');
+                grunt.log.writeln(logPath + 'all_failed_tests.out' + '\n\n');
             }
         };
 
@@ -236,13 +229,13 @@ module.exports = function (grunt) {
 
         queue.drain = function () {
             if (_.isEmpty(failedTasks) && retries === 0) {
-                summary(retries, 'ok');
+                summary('ok');
                 done(true);
             } else if (_.isEmpty(failedTasks)) {
-                summary(retries, 'okWithRetry');
+                summary('okWithRetry');
                 done(true);
             } else if (!_.isEmpty(failedTasks) && retries >= maxRetries) {
-                summary(retries, 'failed');
+                summary('failed');
                 failureReport();
                 done(false);
             } else {
@@ -253,5 +246,4 @@ module.exports = function (grunt) {
         };
         pushToQueue(queue, queueConfig);
     });
-
 };
