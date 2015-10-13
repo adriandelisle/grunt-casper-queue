@@ -35,7 +35,7 @@ module.exports = function (grunt) {
         var queueTimes = [];
         var errorLog = [];
         var successLog = [];
-        var logPath = '.log/test/'
+        var logPath = '.logs/'
         var infoColor = 'blue';
         var failColor = 'red';
         var successColor = 'green';
@@ -149,7 +149,7 @@ module.exports = function (grunt) {
             grunt.log.writeln('\nTotal time: ' + new Duration(startTime).toString('%Ss.%Ls') + ' seconds.');
         };
 
-        var testResult = function (log) {
+        var createReport = function (log) {
             try {
                 log = _.groupBy(log, 'file');
                 var text = '';
@@ -158,8 +158,7 @@ module.exports = function (grunt) {
                         var splitKey = key.split('/');
                         var testName = _.last(splitKey);
                         var command = log[key][0].command;
-                        command = command.split('--xunit')[0];
-                        command = '$ casperjs ' + command.split('casperjs')[1];
+                        command = '$ ' + command.split('--xunit')[0];
                         text += '\n***********************************************************';
                         text += '\nTEST: ' + testName;
                         text += '\n***********************************************************'
@@ -177,18 +176,33 @@ module.exports = function (grunt) {
             }
         };
 
-        var failureReport = function () {
+        var showReport = function () {
+            grunt.log.writeln('\nTest log files:\n'[infoColor]);
             if (errorLog.length > 0) {
-                var report = testResult(errorLog);
-                var reportText = report.replace(noAnsiColorRegex, '');
+                var failedReport = createReport(errorLog);
+                if (failedReport !== null) {
+                    var failedReportText = failedReport.replace(noAnsiColorRegex, '');
 
-                grunt.file.write(logPath + 'all_failed_tests.txt', reportText);
-                grunt.file.write(logPath + 'all_failed_tests.out', report);
+                    grunt.file.write(logPath + 'failed_tests.txt', failedReportText);
+                    grunt.file.write(logPath + 'failed_tests.out', failedReport);
 
-                grunt.log.writeln('\nLog files:\n');
-                grunt.log.writeln(logPath + 'all_failed_tests.txt');
-                grunt.log.writeln(logPath + 'all_failed_tests.out' + '\n\n');
+                    grunt.log.writeln(logPath + 'failed_tests.txt');
+                    grunt.log.writeln(logPath + 'failed_tests.out');
+                }
             }
+            if (successLog.length > 0) {
+                var successReport = createReport(successLog);
+                if (successReport !== null) {
+                    var successReportText = successReport.replace(noAnsiColorRegex, '');
+
+                    grunt.file.write(logPath + 'passed_tests.txt', successReportText);
+                    grunt.file.write(logPath + 'passed_tests.out', successReport);
+
+                    grunt.log.writeln(logPath + 'passed_tests.txt');
+                    grunt.log.writeln(logPath + 'passed_tests.out');
+                }
+            }
+            grunt.log.writeln('\n');
         };
 
         var isRetryMessage = false;
@@ -230,13 +244,15 @@ module.exports = function (grunt) {
         queue.drain = function () {
             if (_.isEmpty(failedTasks) && retries === 0) {
                 summary('ok');
+                showReport();
                 done(true);
             } else if (_.isEmpty(failedTasks)) {
                 summary('okWithRetry');
+                showReport();
                 done(true);
             } else if (!_.isEmpty(failedTasks) && retries >= maxRetries) {
                 summary('failed');
-                failureReport();
+                showReport();
                 done(false);
             } else {
                 retries++;

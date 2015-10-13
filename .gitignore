@@ -5,4 +5,4 @@ tmp
 test-reports/**
 *.swp
 /logs
-.log/
+.logs/
