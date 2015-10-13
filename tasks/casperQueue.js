@@ -34,6 +34,8 @@ module.exports = function (grunt) {
         var failedTasks = {};
         var queueTimes = [];
         var errorLog = [];
+        var successLog = [];
+        var logPath = '.log/test/'
         var infoColor = 'blue';
         var failColor = 'red';
         var successColor = 'green';
@@ -95,17 +97,19 @@ module.exports = function (grunt) {
             }
 
             exec(command, execOptions, function (error, stdout, stderr) {
+                var result = {
+                    command: command,
+                    file: file,
+                    stdout: stdout
+                };
 
                 /* This checking is just in the case of an error don't get reported (SlimerJs) */
                 var isError = stdout.match(/FAIL \d tests? executed in \d+\.\d+s, \d+ passed, \d+ failed, \d+ dubious, \d+ skipped\./);
                 if (error || isError) {
                     failed.push(test);
-                    errorLog.push({
-                        command: command,
-                        file: file,
-                        stdout: stdout
-                    });
+                    errorLog.push(result);
                 }
+                successLog.push(result);
                 callback();
             });
         };
@@ -124,19 +128,18 @@ module.exports = function (grunt) {
         };
 
         var summary = function (numberOfTries, testStatus) {
-            grunt.log.write('\nStatus: ');
             switch (testStatus) {
                 case 'ok':
-                    grunt.log.writeln('PASSED'[successColor] + ' \n');
+                    grunt.log.writeln('\nPASSED'[successColor] + ' \n');
                     break;
                 case 'okWithRetry':
-                    grunt.log.writeln('PASSED WITH RETRY(S)'[retryColor] + ' \n');
+                    grunt.log.writeln('\nPASSED WITH RETRY(S)'[retryColor] + ' \n');
                     break;
                 case 'failed':
-                    grunt.log.writeln('FAILED'[failColor] + ' \n');
+                    grunt.log.writeln('\nFAILED'[failColor] + ' \n');
                     break;
                 default:
-                    grunt.log.writeln('ALERT! TEST SUITE DID NOT RUN PROPERLY' [failColor] + ' \n');
+                    grunt.log.writeln('\nALERT! TEST SUITE DID NOT RUN PROPERLY' [failColor] + ' \n');
             }
             _.each(queueTimes, function (queueTime) {
                 grunt.log.writeln(
@@ -147,38 +150,51 @@ module.exports = function (grunt) {
             grunt.log.writeln('Total retry(s): ' + numberOfTries);
         };
 
+        var testResult = function (log) {
+            if (log.length > 0) {
+                log = _.groupBy(log, 'file');
+                var text = '\n----------------------------------------------------------------------';
+                for (var key in log) {
+                    if (log.hasOwnProperty (key)) {
+                        var splitKey = key.split('/');
+                        var testName = _.last(splitKey);
+
+                        text += '\n' + testName + '\n';
+                        text += '\n' + log[key][0].command + '\n';
+
+                        for (var i = 1; i <= log[key].length; i++) {
+                            text += '\n' + i + ') ';
+                            text += log[key][i - 1].stdout + '\n';
+                        };
+                    }
+                }
+                return text;
+            }
+            return null;
+        };
+
         var failureReport = function () {
-            var allFailedTextFile = '.log/test/all_failed_tests.txt';
-            var allFailedStdoutFile = '.log/test/all_failed_tests.stdout';
-            var allFailed = '';
-
             if (errorLog.length > 0) {
-                grunt.log.writeln('\nTotal # of failures: ' + errorLog.length);
+                console.log(testResult(errorLog));
 
-                _.each(errorLog, function (log) {
-                    var filePathSplit = log.file.split('/');
-                    var testName = _.last(filePathSplit);
-
-                    //TODO: Implement failure report per test
-
-                    allFailed += '\n-------------------------- ';
-                    allFailed += testName;
-                    allFailed += ' ---------------------------\n';
-                    allFailed += '\nCOMMAND: ' + log.command ;
-                    allFailed += '\n\n' + log.stdout + ' \n';
-                });
+               // grunt.log.writeln('\nTotal # of failures: ' + errorLog.length);
+               // errorLog = _.sortedIndex(errorLog, {name: 'larry', age: 50}, 'age');
+               // _.each(errorLog, function (log) {
+               //     var filePathSplit = log.file.split('/');
+               //     var testName = _.last(filePathSplit);
+               //     allFailed += '\n\n' + log.stdout + ' \n';
+               // });
 
                 /* This regex removes all ANSI color codes from standard output */
-                var noAnsiColorRegex = /\x1B\[([0-9]{1,2}(;[0-9]{1,2}(;[0-9])?)?)?[m|K]/g;
-                var plainText = allFailed.replace(noAnsiColorRegex, '');
+               // var noAnsiColorRegex = /\x1B\[([0-9]{1,2}(;[0-9]{1,2}(;[0-9])?)?)?[m|K]/g;
+               // var plainText = allFailed.replace(noAnsiColorRegex, '');
 
-                grunt.file.write(allFailedTextFile, plainText);
-                grunt.file.write(allFailedStdoutFile, allFailed);
+               // grunt.file.write(logPath + 'all_failed_tests.txt', plainText);
+               // grunt.file.write(logPath + 'all_failed_tests.out', allFailed);
 
-                grunt.log.writeln('\nLog files:\n');
-
-                grunt.log.writeln(' ' + allFailedTextFile);
-                grunt.log.writeln(' ' + allFailedStdoutFile + ' \n\n');
+               // grunt.log.writeln('\nLog files:\n');
+               // grunt.log.writeln(' ' + allFailedTextFile);
+               // grunt.log.writeln(' ' + allFailedStdoutFile + ' \n\n');
             }
         };
 
