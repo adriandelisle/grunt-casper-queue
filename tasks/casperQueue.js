@@ -129,6 +129,7 @@ module.exports = function (grunt) {
         };
 
         var summary = function (testStatus) {
+            grunt.log.writeln('\nSummary:'[infoColor]);
             switch (testStatus) {
                 case 'ok':
                     grunt.log.writeln('\nPASSED'[successColor] + ' \n');
@@ -137,7 +138,21 @@ module.exports = function (grunt) {
                     grunt.log.writeln('\nPASSED WITH RETRY(S)'[retryColor] + ' \n');
                     break;
                 case 'failed':
-                    grunt.log.writeln('\nFAILED'[failColor] + ' \n');
+                    if (!_.isEmpty(failedTasks)) {
+                        var log = failedTasks;
+                        var text = '';
+                        for (var key in log) {
+                            if (log.hasOwnProperty (key)) {
+                                text += '\n✘ ' + key + ' has failed.\n';
+                                for (var i = 1; i <= log[key].length; i++) {
+                                    var file = log[key][i - 1].file;
+                                    file = _.last(file.split('/'));
+                                    text += ' ✘ ' + file + '\n';
+                                };
+                            }
+                        }
+                        grunt.log.writeln(text[failColor]);
+                    }
                     break;
                 default:
                     grunt.log.writeln('\nALERT! TEST SUITE DID NOT RUN PROPERLY' [failColor] + ' \n');
@@ -176,8 +191,8 @@ module.exports = function (grunt) {
             }
         };
 
-        var showReport = function () {
-            grunt.log.writeln('\nTest log files:\n'[infoColor]);
+        var showReport = function (failedTasks) {
+            grunt.log.writeln('\nLog files:\n'[infoColor]);
             if (errorLog.length > 0) {
                 var failedReport = createReport(errorLog);
                 if (failedReport !== null) {
