@@ -90,7 +90,8 @@ module.exports = function (grunt) {
             var command = args.join(' ');
 
             var execOptions = {
-                encoding: 'utf8'
+                encoding: 'utf8',
+                maxBuffer: 1024 * 1024
             };
 
             if (casperCwd) {
