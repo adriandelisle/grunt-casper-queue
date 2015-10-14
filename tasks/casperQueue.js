@@ -91,7 +91,7 @@ module.exports = function (grunt) {
 
             var execOptions = {
                 encoding: 'utf8',
-                maxBuffer: 1024 * 1024
+                maxBuffer: 1024 * 512
             };
 
             if (casperCwd) {
@@ -130,13 +130,18 @@ module.exports = function (grunt) {
         };
 
         var summary = function (testStatus) {
-            grunt.log.writeln('\nSummary:'[infoColor]);
+            grunt.log.subhead('\nSummary:' [infoColor]);
+            _.each(queueTimes, function (queueTime) {
+                var timeSummary = ' Test Set: ' + queueTime.name + ' took ' + queueTime.time + 's. Retry #' + queueTime.retry;
+                grunt.log.writeln(timeSummary);
+            });
+            grunt.log.writeln('\n Total time: ' + new Duration(startTime).toString('%Ss.%Ls') + ' seconds.');
             switch (testStatus) {
                 case 'ok':
-                    grunt.log.writeln('\nPASSED'[successColor] + ' \n');
+                    grunt.log.writeln('\n PASSED'[successColor] + ' \n');
                     break;
                 case 'okWithRetry':
-                    grunt.log.writeln('\nPASSED WITH RETRY(S)'[retryColor] + ' \n');
+                    grunt.log.writeln('\n PASSED WITH RETRY(S)'[retryColor] + ' \n');
                     break;
                 case 'failed':
                     if (!_.isEmpty(failedTasks)) {
@@ -144,11 +149,11 @@ module.exports = function (grunt) {
                         var text = '';
                         for (var key in log) {
                             if (log.hasOwnProperty (key)) {
-                                text += '\n✘ ' + key + ' has failed.\n';
+                                text += '\n ✘ ' + key + ' failed.\n';
                                 for (var i = 1; i <= log[key].length; i++) {
                                     var file = log[key][i - 1].file;
                                     file = _.last(file.split('/'));
-                                    text += ' ✘ ' + file + '\n';
+                                    text += '  ✘ ' + file + '\n';
                                 };
                             }
                         }
@@ -158,11 +163,6 @@ module.exports = function (grunt) {
                 default:
                     grunt.log.writeln('\nALERT! TEST SUITE DID NOT RUN PROPERLY' [failColor] + ' \n');
             }
-            _.each(queueTimes, function (queueTime) {
-                var timeSummary = 'Test Set: ' + queueTime.name + ' took ' + queueTime.time + 's. Retry #' + queueTime.retry;
-                grunt.log.writeln(timeSummary);
-            });
-            grunt.log.writeln('\nTotal time: ' + new Duration(startTime).toString('%Ss.%Ls') + ' seconds.');
         };
 
         var createReport = function (log) {
@@ -192,39 +192,30 @@ module.exports = function (grunt) {
             }
         };
 
-        var showReport = function (failedTasks) {
-            grunt.log.writeln('\nLog files:\n'[infoColor]);
+        var saveReport = function (failedTasks) {
             if (errorLog.length > 0) {
                 var failedReport = createReport(errorLog);
                 if (failedReport !== null) {
                     var failedReportText = failedReport.replace(noAnsiColorRegex, '');
-
                     grunt.file.write(logPath + 'failed_tests.txt', failedReportText);
                     grunt.file.write(logPath + 'failed_tests.out', failedReport);
-
-                    grunt.log.writeln(logPath + 'failed_tests.txt');
-                    grunt.log.writeln(logPath + 'failed_tests.out');
                 }
             }
             if (successLog.length > 0) {
                 var successReport = createReport(successLog);
                 if (successReport !== null) {
                     var successReportText = successReport.replace(noAnsiColorRegex, '');
-
                     grunt.file.write(logPath + 'passed_tests.txt', successReportText);
                     grunt.file.write(logPath + 'passed_tests.out', successReport);
-
-                    grunt.log.writeln(logPath + 'passed_tests.txt');
-                    grunt.log.writeln(logPath + 'passed_tests.out');
                 }
             }
-            grunt.log.writeln('\n');
+            grunt.log.subhead('Test execution report can be foud in ".logs/"\n');
         };
 
         var isRetryMessage = false;
         var queue = async.queue(function (task, callback) {
             if (retries && !isRetryMessage) {
-                grunt.log.writeln('\nRetrying failed test(s): \n' [infoColor]);
+                grunt.log.subhead('\nRetrying failed test(s):' [infoColor]);
                 isRetryMessage = true;
             }
 
@@ -244,13 +235,13 @@ module.exports = function (grunt) {
                         retry: retries
                     });
                     if (failedTests.length > 0) {
-                        grunt.log.writeln('✘ ' [failColor] + task.name [failColor]);
+                        grunt.log.writeln(' ✘ ' [failColor] + task.name [failColor]);
                         _.each(failedTests, function (test) {
-                            grunt.log.writeln('  ✘ ' [failColor] + test.file [failColor]);
+                            grunt.log.writeln('   ✘ ' [failColor] + test.file [failColor]);
                         });
                         failedTasks[task.name] = failedTests;
                     } else {
-                        grunt.log.writeln('✔ ' [successColor] + task.name [successColor]);
+                        grunt.log.writeln(' ✔ ' [successColor] + task.name [successColor]);
                     }
                 }
                 callback(); //required for queue task to be considered done
@@ -260,15 +251,15 @@ module.exports = function (grunt) {
         queue.drain = function () {
             if (_.isEmpty(failedTasks) && retries === 0) {
                 summary('ok');
-                showReport();
+                saveReport();
                 done(true);
             } else if (_.isEmpty(failedTasks)) {
                 summary('okWithRetry');
-                showReport();
+                saveReport();
                 done(true);
             } else if (!_.isEmpty(failedTasks) && retries >= maxRetries) {
                 summary('failed');
-                showReport();
+                saveReport();
                 done(false);
             } else {
                 retries++;
