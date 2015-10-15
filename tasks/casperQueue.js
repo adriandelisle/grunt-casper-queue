@@ -135,13 +135,13 @@ module.exports = function (grunt) {
                 var timeSummary = ' Test Set: ' + queueTime.name + ' took ' + queueTime.time + 's. Retry #' + queueTime.retry;
                 grunt.log.writeln(timeSummary);
             });
-            grunt.log.writeln('\n Total time: ' + new Duration(startTime).toString('%Ss.%Ls') + ' seconds.');
+            grunt.log.subhead(' Total time: ' + new Duration(startTime).toString('%Ss.%Ls') + ' seconds.');
             switch (testStatus) {
                 case 'ok':
-                    grunt.log.writeln('\n PASSED'[successColor] + ' \n');
+                    grunt.log.writeln('PASSED'[successColor]);
                     break;
                 case 'okWithRetry':
-                    grunt.log.writeln('\n PASSED WITH RETRY(S)'[retryColor] + ' \n');
+                    grunt.log.writeln('PASSED WITH RETRY(S)'[retryColor]);
                     break;
                 case 'failed':
                     if (!_.isEmpty(failedTasks)) {
