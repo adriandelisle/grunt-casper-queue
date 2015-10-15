@@ -130,7 +130,7 @@ module.exports = function (grunt) {
         };
 
         var summary = function (testStatus) {
-            grunt.log.subhead('\nSummary:' [infoColor]);
+            grunt.log.subhead('Summary:');
             _.each(queueTimes, function (queueTime) {
                 var timeSummary = ' Test Set: ' + queueTime.name + ' took ' + queueTime.time + 's. Retry #' + queueTime.retry;
                 grunt.log.writeln(timeSummary);
@@ -150,10 +150,9 @@ module.exports = function (grunt) {
                         for (var key in log) {
                             if (log.hasOwnProperty (key)) {
                                 text += '\n ✘ ' + key + ' failed.\n';
-                                for (var i = 1; i <= log[key].length; i++) {
-                                    var file = log[key][i - 1].file;
-                                    file = _.last(file.split('/'));
-                                    text += '  ✘ ' + file + '\n';
+                                var testSet = log[key];
+                                for (var i = 0; i < testSet.length; i++) {
+                                    text += '  ✘ ' + testSet[i].file + '\n';
                                 };
                             }
                         }
@@ -215,7 +214,7 @@ module.exports = function (grunt) {
         var isRetryMessage = false;
         var queue = async.queue(function (task, callback) {
             if (retries && !isRetryMessage) {
-                grunt.log.subhead('\nRetrying failed test(s):' [infoColor]);
+                grunt.log.subhead('Retrying failed test(s):');
                 isRetryMessage = true;
             }
 
