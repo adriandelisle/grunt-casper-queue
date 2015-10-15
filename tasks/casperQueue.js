@@ -135,13 +135,13 @@ module.exports = function (grunt) {
                 var timeSummary = ' Test Set: ' + queueTime.name + ' took ' + queueTime.time + 's. Retry #' + queueTime.retry;
                 grunt.log.writeln(timeSummary);
             });
-            grunt.log.subhead(' Total time: ' + new Duration(startTime).toString('%Ss.%Ls') + ' seconds.');
+            grunt.log.subhead(' Total time: ' + new Duration(startTime).toString('%Ss.%Ls') + ' seconds.\n');
             switch (testStatus) {
                 case 'ok':
-                    grunt.log.writeln('PASSED'[successColor]);
+                    grunt.log.writeln(' PASSED'[successColor]);
                     break;
                 case 'okWithRetry':
-                    grunt.log.writeln('PASSED WITH RETRY(S)'[retryColor]);
+                    grunt.log.writeln(' PASSED WITH RETRY(S)'[retryColor]);
                     break;
                 case 'failed':
                     if (!_.isEmpty(failedTasks)) {
@@ -149,7 +149,7 @@ module.exports = function (grunt) {
                         var text = '';
                         for (var key in log) {
                             if (log.hasOwnProperty (key)) {
-                                text += '\n ✘ ' + key + ' failed.\n';
+                                text += ' ✘ ' + key + ' failed.\n';
                                 var testSet = log[key];
                                 for (var i = 0; i < testSet.length; i++) {
                                     text += '  ✘ ' + testSet[i].file + '\n';
