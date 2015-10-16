@@ -35,7 +35,7 @@ module.exports = function (grunt) {
         var queueTimes = [];
         var errorLog = [];
         var successLog = [];
-        var logPath = '.logs/'
+        var logPath = 'casperjs/.logs/'
         var infoColor = 'blue';
         var failColor = 'red';
         var successColor = 'green';
@@ -152,7 +152,7 @@ module.exports = function (grunt) {
                                 text += ' ✘ ' + key + ' failed.\n';
                                 var testSet = log[key];
                                 for (var i = 0; i < testSet.length; i++) {
-                                    text += '  ✘ ' + testSet[i].file + '\n';
+                                    text += '  ✘ '[failColor] + testSet[i].file[failColor] + '\n';
                                 };
                             }
                         }
@@ -208,7 +208,7 @@ module.exports = function (grunt) {
                     grunt.file.write(logPath + 'passed_tests.out', successReport);
                 }
             }
-            grunt.log.subhead('Test execution report can be foud in ".logs/"\n');
+            grunt.log.subhead('Test\'s output can be found in ' + logPath + '\n');
         };
 
         var isRetryMessage = false;
