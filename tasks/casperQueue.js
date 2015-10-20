@@ -110,6 +110,22 @@ module.exports = function (grunt) {
                 if (error || isError) {
                     failed.push(test);
                     errorLog.push(result);
+                    var splitSlash = file.split('/');
+                    var testFile = _.last(splitSlash);
+                    var testName = testFile.split('.')[0];
+                    var output = '';
+                    var cmdText = '$ ' + command.split('--xunit')[0] + '\n';
+                    output += '\n***********************************************************';
+                    output += '\nTEST: ' + testName;
+                    output += '\n***********************************************************'
+                    output += '\n\n' + cmdText + '\n';
+                    output += stdout + '\n\n';
+                    var index = 0;
+                    var filePath = '';
+                    while (grunt.file.exists(filePath)) {
+                        filePath = logPath + 'failures/' + testName + '_' + index++ + '_.err';
+                    }
+                    grunt.file.write(filePath, output);
                 }
                 successLog.push(result);
                 callback();

@@ -56,24 +56,6 @@ module.exports = function (grunt) {
                                     '--ignore-ssl-errors': '',
                                     '--ssl-protocal': 'sslv3'
                                 }
-                            },
-                            {
-                                file: 'tests/casper-sample-0.js',
-                                xunit: 'test-reports/casper-sample-0-1.xml',
-                                overrides: {
-
-                                    // TODO: Slimer needs to be tested
-//                                    '--engine': 'slimerjs'
-                                },
-                                options: {
-
-                                    // TODO: Slimer needs to be tested
-//                                    runHeadless: true
-                                }
-                            },
-                            {
-                                file: 'tests/casper-sample-0.js',
-                                xunit: 'test-reports/casper-sample-0-2.xml'
                             }
                         ],
                         bing: [
