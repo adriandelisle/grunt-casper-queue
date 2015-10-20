@@ -121,7 +121,7 @@ module.exports = function (grunt) {
                     output += '\n\n' + cmdText + '\n';
                     output += stdout + '\n\n';
                     var index = 0;
-                    var filePath = '';
+                    var filePath = 'error';
                     while (grunt.file.exists(filePath)) {
                         filePath = logPath + 'failures/' + testName + '_' + index++ + '_.err';
                     }
