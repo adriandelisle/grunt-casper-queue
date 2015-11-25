@@ -151,15 +151,17 @@ module.exports = function (grunt) {
                 var timeSummary = ' Test Set: ' + queueTime.name + ' took ' + queueTime.time + 's. Retry #' + queueTime.retry;
                 grunt.log.writeln(timeSummary);
             });
-            grunt.log.subhead(' Total time: ' + new Duration(startTime).toString('%Ss.%Ls') + ' seconds.\n');
+            var totalTime = new Duration(startTime).toString('%Ss.%Ls');
+            grunt.log.subhead(' Total time: ' + totalTime + ' seconds.\n');
+            grunt.config.set('casperQueueTime', totalTime);
             switch (testStatus) {
                 case 'ok':
                     grunt.log.writeln(' PASSED'[successColor]);
-                    grunt.config.set('casperQueueResult', 1);
+                    grunt.config.set('casperQueueResult', 0);
                     break;
                 case 'okWithRetry':
                     grunt.log.writeln(' PASSED WITH RETRY(S)'[retryColor]);
-                    grunt.config.set('casperQueueResult', 1);
+                    grunt.config.set('casperQueueResult', 0);
                     break;
                 case 'failed':
                     if (!_.isEmpty(failedTasks)) {
@@ -175,7 +177,7 @@ module.exports = function (grunt) {
                             }
                         }
                         grunt.log.writeln(text[failColor]);
-                        grunt.config.set('casperQueueResult', 0);
+                        grunt.config.set('casperQueueResult', 1);
                     }
                     break;
                 default:
