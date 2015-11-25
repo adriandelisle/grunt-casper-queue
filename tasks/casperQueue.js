@@ -150,9 +150,10 @@ module.exports = function (grunt) {
             _.each(queueTimes, function (queueTime) {
                 var timeSummary = ' Test Set: ' + queueTime.name + ' took ' + queueTime.time + 's. Retry #' + queueTime.retry;
                 grunt.log.writeln(timeSummary);
-                grunt.config.set('casperQueueTime', queueTime.time);
             });
-            grunt.log.subhead(' Total time: ' + new Duration(startTime).toString('%Ss.%Ls') + ' seconds.\n');
+            var totalTime = new Duration(startTime).toString('%Ss.%Ls');
+            grunt.log.subhead(' Total time: ' + totalTime + ' seconds.\n');
+            grunt.config.set('casperQueueTime', totalTime);
             switch (testStatus) {
                 case 'ok':
                     grunt.log.writeln(' PASSED'[successColor]);
