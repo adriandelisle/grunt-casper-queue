@@ -155,9 +155,11 @@ module.exports = function (grunt) {
             switch (testStatus) {
                 case 'ok':
                     grunt.log.writeln(' PASSED'[successColor]);
+                    grunt.config.set('casperQueueResult', 1);
                     break;
                 case 'okWithRetry':
                     grunt.log.writeln(' PASSED WITH RETRY(S)'[retryColor]);
+                    grunt.config.set('casperQueueResult', 1);
                     break;
                 case 'failed':
                     if (!_.isEmpty(failedTasks)) {
@@ -173,6 +175,7 @@ module.exports = function (grunt) {
                             }
                         }
                         grunt.log.writeln(text[failColor]);
+                        grunt.config.set('casperQueueResult', 0);
                     }
                     break;
                 default:
